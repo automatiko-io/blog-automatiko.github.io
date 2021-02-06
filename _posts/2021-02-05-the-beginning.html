@@ -1,0 +1,83 @@
+---
+layout: post
+title: "Man must explore..."
+subtitle: "... the beginning of Automatiko"
+date: 2021-02-05 10:00:00 +0100
+background: '/img/posts/01.jpg'
+---
+
+<p>There is always a chance to find new ways of approaching business problems with technology.
+  That means there is no such thing like safe state and that’s why projects in various areas explore different options
+  to improve and stay relevant. In some case this means rather drastic change of direction to allow certain degree
+  of innovation that could attract new audience.</p>
+
+<p>This is exactly what led to start Automatiko project - the need to look at workflows from different angle.
+   Workflows are nothing new, actually quite the opposite as they are pretty much everywhere. Not just in IT
+   but in our everyday life. We (as human beings) tend to look at life in sort of a structured way. Organizing day
+    activities as process is very common.
+   Starting from getting up from the bed, preparing breakfast, going to school or work and so on...</p>
+
+<p>It is all represented as a set of activities to perform during the day to achieve our goals (despite what they are and might differ each day).</p>
+
+<p>
+Similar in the IT industry- whenever designing things for the system/service/solution/you name it it’s very common
+to draw it as a some sort of a process. Usually kind of flow chart that represents things that should happen to
+meet the requirements. And this is regardless of the actual business domain, it is always the easiest way
+to communicate with our team mates and business stakeholders. As the saying goes “picture is worth 1000 words”
+</p>
+
+<p>
+Yet it is rather rare to see these processes being the base of the system or service.
+It usually ends at initial drawing of the activities and then being transformed into some code that is then executable.
+</p>
+
+<h2 class="section-heading">So the question is why this is the case?</h2>
+
+<p>In most of the cases it is due to process automation solutions (regardless if proprietary or open source) were position as something superior or higher level that lives on top of everything else.
+This has led in many situations to perception for workflows to be an extra layer instead of being treated as any other tool in developers’ toolbox. </p>
+
+<blockquote class="blockquote">So this is the main goal of Automatiko- to bring workflows closer to developers to help them build services and functions backed directly by processes. It is not to replace any of the existing tools but give option to extend possibilities.</blockquote>
+
+<p>Automatiko promotes use of well known workflow standard BPMN2 (Business Process Model and Notation) as a programming language. It is quite a statement to look at BPMN as programming language but bear with me for a while ...</p>
+
+<p>BPMN comes with decades of experience in modeling workflows and it does provide well defined constructs to express various conditions, states, data and more that enable users to easily understand the intent behind the process and thus removed barriers for both business users and new team members joying the project.</p>
+
+<p>Although BPMN is not the only language that can be used, Automatiko also support Serverless Workflow language as an alternative that is less visual language and subset of features that BPMN provides. Nevertheless the most import goal that Automatiko is trying to address is the workflow applicability to solve business problems from model to execution.</p>
+
+<p>Automatiko takes advantage of the modern components to provide a lot of building blocks out of the box. To name few: </p>
+
+<ul>
+  <li>Integration with event streams like Apache Kafka</li>
+  <li>Integration with IoT broker via MQTT</li>
+  <li>Tractability</li>
+  <li>Human interaction</li>
+  <li>Security</li>
+  <li>And much more</li>
+</ul>
+
+<p>Idea behind Automatiko is to use workflows as a way to build your business logic that would then be transformed into one of the following</p>
+
+<ul>
+  <li>Service</li>
+  <li>Function</li>
+  <li>Flow of functions</li>
+</ul>
+
+<p>An in depth on each of them will be given in upcoming articles but just to give a high level overview </p>
+
+<p>Service is no different than what developers would build by coding it directly with any programming language. So it would be like a ReSt or event driven service taking care of business activities. Here they are described as workflow meaning set of activities which are then converted into a self contained and self describing service with well defined api.</p>
+
+<p>Function on the other hand is tailored for use cases that are meant to serve small and fast. This is more of breaking down business problem into individual activities that can be invoked in isolation. These are then converted to functions that can be deployed to</p>
+<ul>
+  <li>AWS Lambda</li>
+  <li>Azure functions</li>
+  <li>Google cloud functions</li>
+  <li>Or used as http endpoints</li>
+</ul>
+<p>Flow of functions is sort of combination of the two above where complex workflows (same as used for services) are broken down into small executable items (like functions) but the coordination when and what should be invoked remains in the workflow. This allows to rely on the dynamic and highly scalable infrastructure to realize this concept. With that said it is based on KNative Eventing and can be effectively deployed to any knative based platforms</p>
+<ul>
+  <li>Google Cloud Run</li>
+  <li>OpenShift Serverless</li>
+  <li>Others KNative complient</li>
+</ul>
+<p>In summary workflow is not new concept but it gains traction again due to various vendors promoting it. Automatiko aims at providing valuable input to let developers to make fact based decision if workflows shall find permanent place in their toolbox.</p>
