@@ -33,14 +33,14 @@ It usually ends at initial drawing of the activities and then being transformed 
 
 <h2 class="section-heading">So the question is why this is the case?</h2>
 
-<p>In most of the cases it is due to process automation solutions (regardless if proprietary or open source) were position as something superior or higher level that lives on top of everything else.
+<p>In most of the cases it is due to process automation solutions (regardless if proprietary or open source) were positioned as something superior or higher level that lives on top of everything else.
 This has led in many situations to perception for workflows to be an extra layer instead of being treated as any other tool in developers’ toolbox. </p>
 
 <blockquote class="blockquote">So this is the main goal of Automatiko- to bring workflows closer to developers to help them build services and functions backed directly by processes. It is not to replace any of the existing tools but give option to extend possibilities.</blockquote>
 
 <p>Automatiko promotes use of well known workflow standard BPMN2 (Business Process Model and Notation) as a programming language. It is quite a statement to look at BPMN as programming language but bear with me for a while ...</p>
 
-<p>BPMN comes with decades of experience in modeling workflows and it does provide well defined constructs to express various conditions, states, data and more that enable users to easily understand the intent behind the process and thus removed barriers for both business users and new team members joying the project.</p>
+<p>BPMN comes with decades of experience in modeling workflows and it does provide well defined constructs to express various conditions, states, data and more that enable users to easily understand the intent behind the process and thus remove barriers for both business users and new team members joining the project.</p>
 
 <p>Although BPMN is not the only language that can be used, Automatiko also support Serverless Workflow language as an alternative that is less visual language and subset of features that BPMN provides. Nevertheless the most import goal that Automatiko is trying to address is the workflow applicability to solve business problems from model to execution.</p>
 
@@ -65,7 +65,7 @@ This has led in many situations to perception for workflows to be an extra layer
 
 <p>An in depth on each of them will be given in upcoming articles but just to give a high level overview </p>
 
-<p>Service is no different than what developers would build by coding it directly with any programming language. So it would be like a ReSt or event driven service taking care of business activities. Here they are described as workflow meaning set of activities which are then converted into a self contained and self describing service with well defined api.</p>
+<p>Service is no different than what developers would build by coding it directly with any programming language. So it would be like a REST or event driven service taking care of business activities. Here they are described as workflow, meaning set of activities which are then converted into a self contained and self described service with well defined api.</p>
 
 <p>Function on the other hand is tailored for use cases that are meant to serve small and fast. This is more of breaking down business problem into individual activities that can be invoked in isolation. These are then converted to functions that can be deployed to</p>
 <ul>
@@ -74,7 +74,7 @@ This has led in many situations to perception for workflows to be an extra layer
   <li>Google cloud functions</li>
   <li>Or used as http endpoints</li>
 </ul>
-<p>Flow of functions is sort of combination of the two above where complex workflows (same as used for services) are broken down into small executable items (like functions) but the coordination when and what should be invoked remains in the workflow. This allows to rely on the dynamic and highly scalable infrastructure to realize this concept. With that said it is based on KNative Eventing and can be effectively deployed to any knative based platforms</p>
+<p>Flow of functions is sort of combination of the two above where complex workflows (same as used for services) are broken down into small executable items (like functions) but the coordination when and what should be invoked remains in the workflow. This allows to rely on the dynamic and highly scalable infrastructure to realize this concept. With that said, it is based on KNative Eventing and can be effectively deployed to any KNative based platforms</p>
 <ul>
   <li>Google Cloud Run</li>
   <li>OpenShift Serverless</li>
