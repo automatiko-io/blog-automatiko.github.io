@@ -1,0 +1,141 @@
+---
+layout: post
+title: "Workflow as a Service"
+subtitle: "Digital transformation of your business is about to start"
+date: 2021-02-08 15:45:00 +0100
+background: '/img/posts/02.jpg'
+---
+
+<p>The first and foremost idea behind Automatiko is to allow use of workflows as a means of describing
+complete business logic of an IT solution. With that you, as a developer would use BPMN
+notation as sort of programming language. Further it will be compiled into a fully featured
+service that can be accessed over the network.</p>
+
+<h2 class="section-heading">Workflow as a service</h2>
+
+<p>
+  Workflow as a service means there will be a service that will be built based on workflow definition(s).
+  This takes into account various aspects of the workflow such as
+
+  <ul>
+    <li>entry point of the workflow</li>
+    <li>type of activities used</li>
+    <li>data object defined</li>
+    <li>custom attributes defined on workflow, activities and data objects</li>
+  </ul>
+</p>
+
+<p>
+Depending on the workflow definition the service built from it will have different characteristics
+but overall it aims at delivering fully functional service that is also selfdescribing.
+</p>
+
+<h3 class="section-heading">Self describing service</h3>
+
+<p>
+The selfdescribing aspect is extremely important as it allows consumers of the service to
+quickly understand the intention behind the service and how to make use of it.
+</p>
+
+<p>
+This characteristic is relaized by building OpenAPI definition of the service
+that can be either consumed directly (e.g. to create client applications) or published to service repositories
+that can be later on discovered and managed by API management tools.
+</p>
+
+<img class="img-fluid" src="/img/posts/02_1.png" alt="OpenAPI definition image">
+<span class="caption text-muted">OpenAPI definition visualized with swagger UI.</span>
+
+<p>
+What is important is that all of the descriptions can be directly defined in the workflow definition
+making it not just the definition of you business logic but also your
+documentation.
+</p>
+
+<h3 class="section-heading">Entry points of the service</h3>
+
+<p>
+Entry point of the service are built based on so called stard events of the workflow
+definition. That can be one of following
+<ul>
+  <li>none start event - it will be a dedicated <code>POST</code> endpoint</li>
+  <li>message start event - it will rely on integration components to subscribe for messages</li>
+  <li>timer start event - it will start based on time intervals</li>
+</ul>
+
+This enables service to react to various types of events that can initiate instances
+of the workflow.
+</p>
+
+<h3 class="section-heading">Expose data to the outside world</h3>
+
+<p>
+  Since data is effectively the most important part of the service, exposing them to
+  outside world is crucial. In many cases this will lead to defining the intention
+  behind given data object of the workflow.
+</p>
+
+<p>
+Common scenarios invole data object classification such as
+<ul>
+  <li>inputs of the service - data that are expected to be given when starting new instances</li>
+  <li>outputs of the service - data that will be considered as results of the instance</li>
+  <li>internal data - data objects that are not to be shown to the consumers of the service</li>
+</ul>
+This again contributes to the description of the service, so consumers can directly interact with the service
+in the way that was intended.
+</p>
+
+<h3 class="section-heading">Secured from the beginning</h3>
+
+<p>
+Security should never be an afterthought, that's why Automatiko comes with simple yet powerful
+option to secure your service. Service can be secured on the API level but also on the instance
+level. Instance level security enables use cases that bring the context of the instance into the mix.
+Instance level security enforces security on operation level such as
+
+<ul>
+  <li>read - checks if given identity can access the instance</li>
+  <li>create - checks if given identity can create new instance</li>
+  <li>update - checks if given identity can update the data of the instance</li>
+  <li>delete - checks if given identity can delete the instance</li>
+  <li>signal - checks if given identity can trigger activities in the instance</li>
+</ul>
+
+Various access policies can be implemented taking into account different aspects e.g.
+actors involved in given instance, geolocation of the actors and so on.
+</p>
+
+<h3 class="section-heading">Know what's happening</h3>
+
+<p>
+Building and deploying service is one thing but knowing how it operates is another.
+Automatiko comes with built in mechanism for delivering metrics about the execution
+state. That is directly exposed as service endpoint that can be integrated with monitoring
+tools like Prometheus and Grafana to build dashboards on top of collected data.
+</p>
+
+<p>
+In addition to that, Automatiko comes with an addon that can be added to the service
+to provide extra details around workflows being used in the service.
+</p>
+
+<img class="img-fluid" src="/img/posts/02_2.png" alt="OpenAPI definition image">
+<span class="caption text-muted">Process management addon UI.</span>
+
+<h2 class="section-heading">Conclusion</h2>
+
+<p>
+Workflow as a service is meant to build services backed by workflow, taking their
+definition as the source of the logic to be exposed. Making best use of the what
+workflows are good at (visibility, isolation, tracability and more) to deliver
+efficient runtime environment to host your business logic.
+</p>
+
+<p>
+At the same time it is not that different from the regular way ... build it from scratch.
+It does rely on modern architectures, frameworks and ways of building services
+which greatly simplifies maintenance of the delivered service.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
