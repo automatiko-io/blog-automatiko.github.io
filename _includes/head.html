@@ -3,8 +3,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:site" content="@automatiko_io" />
+  <meta name="twitter:title" content="{{ page.title }}" />
+  {% if page.subtitle %}
+  <meta name="twitter:text:title" content="{{ page.subtitle }}" />
+  {% endif %}
   <meta name="twitter:creator" content="@automatiko_io" />
+  <meta name="twitter:image" content="{{ page.background | prepend: 'https://blog.automatiko.io' | replace: '//', '/' }}" />
   <title>
     {% if page.title %}{{ page.title | escape }} - {{ site.title | escape }}
     {% else %}{{ site.title | escape }}{% endif %}
