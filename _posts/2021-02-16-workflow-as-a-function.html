@@ -1,0 +1,115 @@
+---
+layout: post
+title: "Workflow as a Function and Function Flow"
+subtitle: "Right-size your business logic"
+date: 2021-02-08 15:45:00 +0100
+background: '/img/posts/03.jpg'
+---
+
+<p>In the first article we introduced concept of workflow as a service that allows to encapsulate business logic as workflow which is then used to generate a self describing service.
+   This time we shift focus to even smaller piece of business logic - a function - that is still represented as workflow. </p>
+
+<p>Workflow as a function in Automatiko has two flavours</p>
+
+<ul>
+   <li>Standalone function</li>
+   <li>Function flow</li>
+</ul>
+
+<p>
+The first one is rather straightforward as it makes the entire workflow to become a <b>function</b>. That means whenever it is invoked it expects to run complete workflow -
+from the start event to one or more end events. Its main purpose is to allow to build simple but well defined pieces of business logic.
+While it is expected that the function complete instantly it can still take advantage of various features of workflow such as error handling and retries.
+</p>
+
+<p>
+  On the other hand - <b>function flow</b> is more advanced option that breaks the workflow into functions that can be individually called. Though
+   the main use case is to start the flow with one event and the rest will be invoked automatically based on context of the workflow instance which is the data.
+</p>
+<p>
+  It is based on a concept of <code>context altering activities</code> - this is essentially based on finding activities in the workflow definition that
+  actually change its data. For instance a service task or business rule task is such an activity while start, end or gateway (decision points in the workflow) is not.
+</p>
+
+
+
+<p>
+Each <code>context altering activity</code> is then transformed into a function that can be invoked.  Invocation of functions in the flow are always done though the
+Knative broker that means it can scale pretty much to no limit as each invocation allows to evaluate the load and scale up if required.
+</p>
+
+<p>
+Moreover since the workflow controls the execution (aka the flow) it can produce more than one event after execution. One of common examples is when workflow instance uses
+ parallel gateway that spans into many paths - in such case function will emit as many events as the parallel paths. This in turn will call all these paths individually with
+ complete context - data. In addition it also keeps track of the ids so each invocation can be tracked and identified.
+</p>
+
+<p>
+While function itself is expected to be short lived and fast invocations, function flows can be long lived as well.
+That is possible due to the nature of workflow that can persist state in between the calls and be resumed by another incoming event carrying an identifier as part of the event.
+</p>
+
+<p>
+  As opposed to workflow as a service, function or function flow are not self describing in the same manner. That is due to the fact they rely on different technology.
+  Function and function flow in Automatiko are implemented as functions with <a href="https://quarkus.io/guides/funqy">Quarkus Funqy framework</a>.
+</p>
+
+<p>
+Workflow as a function uses HTTP binding of funqy and function flow uses <a href="https://knative.dev/">Knative</a> binding with cloud events.
+</p>
+
+<p>
+This enables a massive usage with various cloud providers as functions can be deployed to
+</p>
+<ul>
+  <li>AWS lambda</li>
+  <li>Azure functions</li>
+  <li>Google cloud functions</li>
+  <li>Or as standard http endpoint</li>
+</ul>
+
+<p>
+Function flow can be deployed to any cloud offering that supports Knative so it can be
+</p>
+
+<ul>
+  <li>Knative on Kubernetes cluster</li>
+  <li>Google Cloud Run</li>
+  <li>OpenShift serverless</li>
+</ul>
+
+<p>
+Function flow builds up on top of cloud events as exchange format which makes the invocation easily portable between deployment environments.
+It allows to be bound to various protocols such as http, Apache Kafka, Apache camel and more. Yet not requiring any change in your business logic.
+</p>
+
+<p>
+Even though functions and function flows are not self described as services they do come with helpful instructions on how the
+function endpoints look like and what are the expected event payloads. This comes with either build time instructions or
+<a href="https://quarkus.io/guides/dev-ui">Quarkus Dev UI</a> addon.
+</p>
+
+<img class="img-fluid" src="/img/posts/03_1.png" alt="Dev UI image">
+<span class="caption text-muted">Automatiko integrated with Quarkus Dev UI.</span>
+
+<img class="img-fluid" src="/img/posts/03_2.png" alt="DevUI function flow endpoints image">
+<span class="caption text-muted">Quarkus dev UI of Automatiko helps with function flow endpoints.</span>
+
+<h3 class="section-heading">Limitations</h3>
+
+<p>
+Function and function flows are excellent choice for certain use cases but for sure not for all.
+ There are limitations in type on workflow constructs you can use or the long running workflow instances are usually not the best fit. But if you need to have unlimited scalability
+ and option to break the workflow into small pieces without the need of syncing on state then functions and function flows will certainly do the job.
+</p>
+
+
+<h2 class="section-heading">Conclusion</h2>
+
+<p>
+Automatiko provides various options to use workflows depending on your use case. It can be short lived, instant execution but it might also be a year long instances that
+requires time based interaction, human actors involvement and more. So best to look at your problem to be solved from requirements point of view
+and based on that choose which option is the best. Feel free to drop a question if you are unsure we are more than happy to assist you.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
