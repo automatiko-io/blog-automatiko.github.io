@@ -1,0 +1,90 @@
+---
+layout: post
+title: "Automatiko 0.2.0 released"
+subtitle: "Brings new data stores and event publishers"
+date: 2021-02-08 15:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a brand new release of Automatiko - 0.2.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Amazon DynamoDB data store</li>
+   <li>Apache Cassandra data store</li>
+   <li>ElasticSearch event publisher</li>
+   <li>WebSocket event publisher</li>
+   <li>Quarkus Dev UI support</li>
+   <li>Build time instructions for function and function flow projects</li>
+   <li>Option to define custom cloud event type attribute for function flows</li>
+</ul>
+
+<h3 class="section-heading">Amazon DynamoDB data store</h3>
+
+<p>
+  Amazon DynamoDB can be now used as the data store for state persistent store. It includes both
+  workflow instance state and jobs (timers). It does setup all required tables automatically
+  to make sure the use of it is as smooth as possible. You can read up more on this
+  in <a href="https://docs.automatiko.io/main/0.2.0/components/persistence.html#_dynamodb_based_storage">Automatiko documentation</a>
+</p>
+
+<h3 class="section-heading">Apache Cassandra data store</h3>
+<p>
+Similar to Amazon DynamoDB, Apache Cassandra data store is also available. This opens up for use cases
+that requires high scalability and multi data center approach. It includes both
+workflow instance state and jobs (timers). It does setup all required tables and indexes automatically
+to make sure the use of it is as smooth as possible. You can read up more on this
+in <a href="https://docs.automatiko.io/main/0.2.0/components/persistence.html#_apache_cassandra_based_storage">Automatiko documentation</a>
+</p>
+
+<h3 class="section-heading">ElasticSearch event publisher</h3>
+<p>
+  Event publisher that is responsible for pushing out events that hold workflow instance or user task information
+  can now be easily integrated with ElasticSearch. This enables very powerful option to search by various criteria.
+  In addition to just the events that are being constantly updated (to always represent the latest state), this event
+  publisher allows to push out audit log events that are in append only manner.
+  You can read up more on this
+  in <a href="https://docs.automatiko.io/main/0.2.0/components/event-publishers.html#_elasticsearch_event_publisher">Automatiko documentation</a>
+</p>
+
+<h3 class="section-heading">WebSocket event publisher</h3>
+<p>
+  WebSocket event publisher is more for user facing use cases where you would ike to have real time information about
+  worklfow instances and/or user tasks. This event publisher is user context aware so whenever a secrity restrictions
+  are defined in the workflow they are applied. Meaning only authorized users will see data.
+  You can read up more on this
+  in <a href="https://docs.automatiko.io/main/0.2.0/components/event-publishers.html#_elasticsearch_event_publisher">Automatiko documentation</a>
+</p>
+
+<h3 class="section-heading">Quarkus Dev UI support</h3>
+<p>
+  Automatiko takes advantage of latest features of Quarkus and this time it brings support for Dev UI to help
+  developers better understnad what their service is composed of.
+</p>
+<img class="img-fluid" src="/img/posts/03_1.png" alt="Dev UI image">
+<span class="caption text-muted">Automatiko integrated with Quarkus Dev UI.</span>
+
+<h3 class="section-heading">Build time instructions for function and function flow projects</h3>
+<p>
+  When using functions and function flows Automatiko will provide build time instructions about available functions.
+  The instructions will provide
+  <ul>
+    <li>endpoints for each function</li>
+    <li>expected payload for each function</li>
+  </ul>
+  This information is also available via Dev UI.
+</p>
+
+<h3 class="section-heading">Option to define custom cloud event type attribute for function flows</h3>
+<p>
+  When working with function flows where data is always exchanged in cloud events format, users now have more control
+  over what is used for the type attribute. This in turn controls the routing of events to individual functions.
+  By default it is based either on workflow definition id or for activities based on the activity name. In
+  both cases these are prefixed with package name of the workflow.
+</p>
+
+
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
