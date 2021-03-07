@@ -1,0 +1,116 @@
+---
+layout: post
+title: "Kubernetes Operators with workflows..."
+subtitle: "...sounds like a good fit?"
+date: 2021-03-06 15:45:00 +0100
+background: '/img/posts/05.jpg'
+---
+
+<p>Kubernetes operators became quickly popular. Allowing to automate pretty much any task makes a good promise to end users.
+  More and more of them are popping up and they do simplify way of working with various products, projects and components. </p>
+
+<p>Operators are usually bound to <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/">custom resources</a> (a kubernetes extension to core objects such as pods, services etc).
+  Custom resource allows us to build a first class citizen objects in kubernetes that represents exactly what we need. </p>
+
+<p>In most of the cases operators are built with Go language. There is SDK to help you out in the process of building your own operator but it does require a decent knowledge about both kubernetes, custom resources and Go as programming language.
+  Sometimes this can be a bit of a show stopper especially if Go is not your primary programming language. </p>
+
+<blockquote class="blockquote">Don’t worry though, there are other options that will help you to take a ride with operators. </blockquote>
+
+<p>So in general an operator’s responsibility is to remove or at least minimise the need for manual work around the provisioning and managing of your custom resources.
+   This can be almost anything from creating config maps or secrets for a given set of items, provisioning data base schema,
+   deploying custom containers or enhancing already deployed. It will depend on your actual needs but what it all has in common is
+   that it usually end up to be some sort of sequence of steps or even a state machine. So the more you look into it the more it
+   looks like a workflow or a process. </p>
+
+<blockquote class="blockquote">So with that ... why not make use of workflow engines to build operators?</blockquote>
+
+<p>You might ask what’s the benefits to use workflows instead of relying solely on operator’s SDK.... let’s have a quick look at them directly</p>
+
+<ul>
+   <li>workflows give direct visibility to the work operator will do, this applies to both development time and runtime - <b>picture is worth 1000 words</b> - or to rephrase it a bit - <b>picture is worth 1000 lines of code</b></li>
+   <li>workflows allow you to take advantage of the built in capability - isolation - as each workflow instance is completely isolated from each other and manages its data independently</li>
+   <li>workflows come with many useful features such as error handling, retry, notifications that can involve human actors in specific situations</li>
+   <li>workflows are equipped with compensation capabilities to ensure that the work operator does, always stays in consistent state - in case there are failures within then “happy path”, already performed steps can be compensated and thus leave the state of the cluster consistent</li>
+</ul>
+
+<p>Automatiko is a java based project so the approach discussed here will be a java focused but there are also other alternatives that might be worth to explore. </p>
+
+<blockquote class="blockquote">So java and kubernetes operators... what’s available for java developers? </blockquote>
+
+<p>
+  First and foremost is the <a href="https://github.com/fabric8io/kubernetes-client">fabric8 kubernetes client
+library</a> that allows simple yet very powerful interaction with kubernetes cluster api. To make it even more approachable there is
+<a href="https://github.com/java-operator-sdk/java-operator-sdk">a java operator SDK</a> that is built on top of fabric8 kubernetes client. In addition to that, it also provides Quarkus extension
+and with that you can build the operator as native image that makes it very efficient in resource utilization and extremely fast
+to start that is comparable with Go based operators.
+</p>
+
+<p>
+Automatiko builds on these two (fabric8 kubernetes client and java operator SDK) and delivers workflow based approach to building
+operator logic. It is implemented similar to how Automatiko provides support for event streams (IoT, Apache Kafka) via so called
+message events. Message events is the entry point to the workflow logic.
+ It will receive all events from kubernetes api when custom resource was:
+
+
+<ul>
+  <li>created</li>
+  <li>updated</li>
+  <li>deleted</li>
+</ul>
+</p>
+
+<p>There are two main ways of implementing workflows for operators</p>
+
+<ul>
+  <li>statefull</li>
+  <li>stateless</li>
+</ul>
+
+<h3 class="section-heading">Statefull</h3>
+<p>
+Stateful means that workflow instance will be bound to the life time of a custom resource. That means it is created when custom resource is created in the cluster/namespace. That instance stay active as long as custom resource is "alive".
+It will receive all updates made to the custom resource. Eventually, the same workflow instance will be notified when the custom resource was deleted. Each of these events will trigger logic in the workflow instance that will perform set of steps. The statefull approach mirrors to some extent the custom resource - giving complete view of the custom resource via the workflow instance.
+</p>
+
+<h3 class="section-heading">Stateless</h3>
+<p>
+  Stateless on the other hand does not mirror the  custom resource but simply executes the logic of the workflow and ends it. In most of the cases this could lead to having different workflow definitions per type of event - create, update and delete of custom resource.
+</p>
+
+<h3 class="section-heading">What's more that workflow can bring?</h3>
+<p>
+Another important aspect that workflow enable by default is the ability to interact with human actors. Even though operators are meant to automate things there are always exceptional situations that would require human intervention. Notifications and human assigned tasks can also be useful when there will be a need for extra information during the operator work.
+</p>
+
+<p>
+Last but not least worth mentioning feature of workflows that can become handy for operator implementations are time based actions - timers. Timers can be put into your workflow definition to pause further execution until given time elapsed or certain date/time was reached. It could serve as a base for instance for time based auto scaling - bring up more pods of a custom resource for office hours and scale down to only one instance during off work hours.
+</p>
+
+
+<p>These are just few arguments that can broaden the view while starting to work with operators. But let’s have a look at something more concrete- so let’s have a look at operator built with workflow. </p>
+
+<img class="img-fluid" src="/img/posts/04_1.png" alt="Operator as workflow image">
+<span class="caption text-muted">Workflow model of Kubernetes operator that allows MySQL schema provisioning with secrets creation.</span>
+
+<p>The above operator follows the statefull approach and models <a href="https://blog.container-solutions.com/cloud-native-java-infrastructure-automation-with-kubernetes-operators">a simple MySQL schema provisioning example</a>.</p>
+
+<p>So there are three distinct entry points that are invoked automatically based on incoming events from kubernetes api
+
+<ul>
+  <li>when new custom resource is created it triggers <b>Created</b> message start event which will then create schema, create secret with password to the schema and update the status.
+  In case there are errors during schema creation, automatic retries will be peformed and in case all retries attempts are taken the custom resource status will be updated with an error.</li>
+  <li>when custom resource was updated the <b>Updated</b> message start event is invoked. It will verify the schema exists and if so end or crate it. Note that this is correlated based on custom resource name</li>
+  <li>when custom resource is deleted it will invoke <b>Deleted</b> message event that will trigger "clean up" logic</li>
+</ul>
+</p>
+
+
+<h3 class="section-heading">Conclusion</h3>
+<p>
+The idea behind operators is very powerful and it can make life of operation team way easier. In addition to that operators start to gain traction as well for application needs which are less infrastructure focused. Having possibility to build operator logic in the programming language of your application will certainly help to get up to speed rapidly. Regardless of the programming language being used there might be a potential problem with visibility of the operator work. Here workflows come handy and bring set of features to make the operator being more consumable for both development and operation team members.
+</p>
+
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
