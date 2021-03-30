@@ -1,0 +1,94 @@
+---
+layout: post
+title: "Automatiko 0.3.0 released"
+subtitle: "Brings Kubernetes Operators support and improved management"
+date: 2021-03-29 15:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a brand new release of Automatiko - 0.3.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Kubernetes Operators support based on Java Operator SDK</li>
+   <li>Error handling improvements</li>
+   <li>Versioned process variables</li>
+   <li>Process management UI enhancements</li>
+   <li>Variable initializer support for simple types</li>
+</ul>
+
+<h3 class="section-heading">Kubernetes Operators support based on Java Operator SDK</h3>
+
+<p>
+  Automatiko supports building Kubernetes Operators as workflows that improves visibility into what operator does.
+  It provides complete integration with <a href="https://github.com/java-operator-sdk/java-operator-sdk">Java Operator SDK</a>
+  that hooks into Kubernetes cluster and registers watchers and more. At the same time it allows to have access to
+  Kubernetes API server via Fabric8 Kubernetes client. Workflows can perform operations on Kubernetes API server via
+  Service Tasks that get Kubernetes client injected and receive events from Kubernetes via message events.
+</p>
+<p>
+  Automtiko provides support for building operators directly in the Kubernetes cluster with live reload without a need
+  to rebuld the image and redeploy. Have a look at <a href="https://mswiderski.blogspot.com/2021/03/kubernetes-operator-with-automatiko.html">this blog post </a>
+   to see it in action.
+</p>
+<img class="img-fluid" src="/img/posts/04_1.png" alt="Operator as workflow image">
+<span class="caption text-muted">Workflow model of Kubernetes operator that allows MySQL schema provisioning with secrets creation.</span>
+
+<h3 class="section-heading">Error handling improvements</h3>
+<p>
+Error handling has been improved to collect more information and present them in more accessible way.
+
+<ul>
+  <li>Unqieue error identifier</li>
+  <li>Short and descriptived error message</li>
+  <li>Error details that can have relatively long information depending on the error</li>
+</ul>
+
+There is additional error section in Process management UI providing extra capabilities around error handling.
+</p>
+
+<h3 class="section-heading">Versioned process variables</h3>
+<p>
+  Data objects can now be tagged as <code>versioned</code> which will automatically track changes to them
+  and make a copy to any non null values. That will then build up a list of versions given variable had.
+  Versions are also avaiale to be easily accessed in the workflow definition which enables use cases
+  that requite comparing received data with already processed. Users can easily get access to
+  <ul>
+    <li>the complete list of versions by refering to variable: <code>person$</code></li>
+    <li>previous version of the variable <code>previousVersion(person$)</code></li>
+    <li>any version by version number <code>variableVersion(person$)</code></li>
+  </ul>
+  Above variables can be easily accessed in script tasks and any conditions like gateway or conditional events.
+</p>
+<img class="img-fluid" src="/img/posts/06_1.png" alt="Variable versions in Process Management UI">
+<span class="caption text-muted">Automatiko process management UI versioned variables.</span>
+
+<h3 class="section-heading">Process management UI enhancements</h3>
+<p>
+  Process management UI has been significantly improved to bring not only visibility but also operations support
+  <ul>
+    <li>Allows to abort a workflow instance</li>
+    <li>In case of an error you can either retrigger or skip failed activitiy</li>
+    <li>Marks failed workflow instances in the Instances table</li>
+    <li>Display variables that are versioned with thier versions to compare or revert to</li>
+    <li>Workflow instance image has both completed and active nodes annotated</li>
+    <li>Workflow instance image has markers on activities that failed or are retrying</li>
+  </ul>
+</p>
+<img class="img-fluid" src="/img/posts/06_2.png" alt="Error marker on workflow image">
+<span class="caption text-muted">Automatiko process management UI error marker.</span>
+
+<h3 class="section-heading">Variable initializer support for simple types</h3>
+<p>
+  Automatiko allows to tag variables (aka data objects) as <code>auto-initialized</code> which will ensure that the
+  variable is initialized at the start of workflow instance. With this release there is alos support for simple types
+  <ul>
+    <li><b>boolean</b> will have value set to <code>false</code></li>
+    <li><b>any number type</b> will have value set to <code>0</code></li>
+    <li><b>string</b> will have value set to <code>empty string</code></li>
+  </ul>
+</p>
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
