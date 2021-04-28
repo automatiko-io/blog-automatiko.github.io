@@ -1,0 +1,96 @@
+---
+layout: post
+title: "Automatiko 0.4.0 released"
+subtitle: "Improved human actors collaboration and error handling"
+date: 2021-04-28 15:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a brand new release of Automatiko - 0.4.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Custom templates for user task forms</li>
+   <li>Email notifications for assigned user tasks</li>
+   <li>Time to live of workflow instance</li>
+   <li>Exponential retries for errors</li>
+   <li>CRON based timer expression support</li>
+   <li>Support for multiple execution errors</li>
+</ul>
+
+<h3 class="section-heading">Custom templates for user task forms</h3>
+
+<p>
+  To improve support for handling user tasks - tasks assigned to human actors - Automtiko provides simple yet powerful support based
+  on templates. These templates are assigned to user tasks of the workflow definition and are expected to be tailor made to fit the
+  needs of work to be done as part of the task. Instead of trying to define generation of forms that usually is good for demos
+  Automatiko gives the full power to developers to design the form and utilize all and any capabilities of the UI based forms e.g.
+  load data on demand, associate form fields to perform validation and more. For more details have a
+  look at <a href="https://docs.automatiko.io/main/0.4.0/components/user-tasks.html">Automatiko documentation</a>
+</p>
+<p>
+  Automtiko user task templates are based on <a href="https://quarkus.io/guides/qute">Qute</a>
+   which provides server side templating but delivers fully functional HTML page that can utilize any stylesheets or scripting.
+</p>
+<img class="img-fluid" src="/img/posts/07_1.png" alt="User task form image">
+<span class="caption text-muted">A sample of custom made user task form for vacation request approval.</span>
+
+<h3 class="section-heading">Email notifications for assigned user tasks</h3>
+<p>
+Similar to user task forms, Automatiko also provide support for email notification for users and groups assigned to user tasks.
+These are also based on templates but in many cases the default template will be good enough. It's main purpose is to highlight
+that there is a task awaiting but does not have to expose details.
+</p>
+
+<center><img class="img-fluid" src="/img/posts/07_2.png" alt="Email notification image"></center>
+<span class="caption text-muted">A sample of default email notification for user task.</span>
+
+<p>
+  To make it even more under user control, there is a special mechanism that allows to define email address resolver that is specific
+  to your needs. By default it assumes that all users that are assigned to tasks are defined as email addresses and only then it will
+  send email notification. But if you use some kind of user ids that are not email addresses then you can provide your custom implementation
+  that will be used instead. For more details have a look at <a href="https://docs.automatiko.io/main/0.4.0/components/user-tasks.html">Automatiko documentation</a>
+</p>
+
+<h3 class="section-heading">Time to live of workflow instance</h3>
+<p>
+  Setting a maximum time given workflow instance can be in active state might become handy to avoid stale instances staying there forever.
+  Time to live feature does exactly that - with just single custom attribute (<code>timeout</code>) in the workflow definition that is in ISO 8601 duration format
+  you can express how long it should wait before automatically aborting the instance.
+</p>
+<img class="img-fluid" src="/img/posts/07_3.png" alt="Time to live custom property">
+<span class="caption text-muted">Automatiko process management UI versioned variables.</span>
+
+<h3 class="section-heading">Exponential retries for errors</h3>
+<p>
+  To provide more powerful handling of retries on failed tasks, users can easily define additional custom attributes on the error
+  to express how the retries should happen. On top of the already supported <code>retry</code> and <code>retryLimit</code> you can now
+  define additional attributes
+  <ul>
+    <li><code>retryIncrement</code> - duration which will be added to the delay between successive retries (ISO 8601 duration format)</li>
+    <li><code>retryMultiplier</code> - value by which the delay is multiplied before each attempt. For example, "1.2" meaning that each successive delay is 20% longer than the previous delay</li>
+  </ul>
+</p>
+<img class="img-fluid" src="/img/posts/07_4.png" alt="Error retry based on increment image">
+<span class="caption text-muted">Error retry equipped with custom increment.</span>
+
+<h3 class="section-heading">CRON based timer expression support</h3>
+<p>
+  Waiting for a certain amount of time before continuing with workflow execution is common requirement. But some times interval based
+  time expression are not enough. Especially if there is a need to associate the time with calendar like wake up next Monday or every
+  Tuesday at 5PM.
+  Automatiko brings CRON based timer expression to cover this exact requirement. With 0.4.0 you can easily define your timers as CRON
+  and take advantage of calendar based timer references.
+</p>
+
+<h3 class="section-heading">Support for multiple execution errors</h3>
+<p>
+  In case things go wrong and the workflow instance runs into an error state it needs to be clearly visible on what failed.
+  In 0.4.0 that part has been improved to support multiple errors during execution. This might sounds strange at first look
+  but in reallity it can happen in certain workflows. To give a most common example - when using parallel gateways that will
+  execute multiple paths of workflow definition. Each of them might result in an error but it still should execute all paths
+  as this will allow to retrigger failed paths and make sure all of them were actually taken.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
