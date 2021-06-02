@@ -1,0 +1,117 @@
+---
+layout: post
+title: "Automatiko 0.5.0 released"
+subtitle: "Workflow instance import, export and archive"
+date: 2021-06-01 15:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.5.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Export and import of workflow instances</li>
+   <li>Archive of workflow instances</li>
+   <li>Conflict detection on persistence layer</li>
+   <li>Function Flow execution improvements</li>
+   <li>Serverless workflow support for functions and function flows</li>
+</ul>
+
+<h3 class="section-heading">Export and import of workflow instances</h3>
+
+<p>
+  In many cases there is a need to get hold of particular workflow instance in another environment. Be
+  it a troubleshooting or debugging production problem, moving between data stores, migrating between
+  different workflow versions or simply to inspect the complete state of the instance.
+  Exactly for such use cases Automatiko brought you an export and import functionality for workflow instances.
+  It comes with complete coverage of exporting and importing that includes
+  <ul>
+    <li>all workflow instance variables</li>
+    <li>all active node instances</li>
+    <li>sub workflow instances if there are any</li>
+    <li>timers of any kind if there are any</li>
+  </ul>
+  That will give you a complete set of information about given workflow instance and its dependencies. Importing
+  such instance can be performed to any environment that runs the same service but it can be backed by different
+  data store. In case of moving between workflow definition version there might be a need to adjust the exported
+  instance depending if there were non backward compatible changes in the definitions.
+</p>
+<p>
+Export and import operations are provided to your service via <code>process management addon</code>. Have a look at
+<a href="https://docs.automatiko.io/main/0.5.0/components/management.html#_export_workflow_instance">Automatiko documentation</a>
+for more information about exporing and importing of workflow instances.
+</p>
+<p>You can see this export and import in action in the below video</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/JXydoS0Ywus" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+
+<h3 class="section-heading">Archive of workflow instances</h3>
+<p>
+Archiving of a workflow instance provides a way to collect complete set of information about given instance. That means that
+a workflow instance is extracted from the system and shipped to the caller in a zip archive format. Important to note is that
+the zip archive has a predefined structure
+<ul>
+  <li>exported workflow instance file - based on the export functionality</li>
+  <li>each variable is stored in separate file as JSON document</li>
+  <li>sub workfow instances (if any) are stored in sub directory with same structure as the top level (exported and variables)</li>
+</ul>
+</p>
+<p>
+Archive operation is provided to your service via <code>process management addon</code>. Have a look at
+<a href="https://docs.automatiko.io/main/0.5.0/components/management.html#_archive_workflow_instance">Automatiko documentation</a>
+for more information about archiving of workflow instances.
+</p>
+
+
+<h3 class="section-heading">Conflict detection on persistence layer</h3>
+<p>
+  Conflict detection on persistence layer is very important when there are workflow instances being accessed concurrently. It might not be that important
+  if there is always one request for given workflow instance but if there are possibilities that same instance will be accessed concurrently
+  then dealing with conflicts is a must. A common case fo concurent access is working on user task that is assigned to a group. There could be many
+  human actors accessing same task (and by that same workflow instance) at exact time. There could be also multiple messages coming into the service
+  that target the same workflow instance (based on correlation attributes).
+</p>
+<p>
+  To mitigate side effects of concurrent updates to the same workflow instance Automatiko detects conflicts based on version identifier.
+  Each operation is tagged with a version number that is checked upon completion. If the version matches then it is directly stored in
+  the data store. If the version does not match the execution is discarded and it is retried. The reason is to make sure that it is never
+  possible to override newer data. It is similar to optimistic locking in relational database world. It does not cover all possible
+  scenarios but certainly improves data consistency. Main drawback is the retry that means the operations that failed will be reexecuted.
+  So it is important that operations performed are idempotent.
+</p>
+
+<h3 class="section-heading">Function Flow execution improvements</h3>
+<p>
+  <a href="https://docs.automatiko.io/main/0.5.0/concepts.html#_workflow_as_a_function_flow_waaff">Workflow as a Function Flow</a>
+   is a very powerful concept that allows high scalability based on <a href="https://knative.dev">KNative Eventing</a>
+   but allowing developers to focus on complete business use case rather just individual functions. This release comes with number of
+   improvements to make it even more powerful.
+  <ul>
+    <li>control over activities included in single function - developers can declare with a custom attribute (<code>functionFlowContinue</code>) that given activity should
+    be part of the same function. In other words activities can be chained to form a single function execution. In most of the cases this would become
+    useful when there are no needs to invoke operation in separation</li>
+    <li>REST invocation (based on OpenAPI) - Function Flows can now use OpenAPI based client invcation of REST endpoints as part of the workflow definition. This
+    serves as a cornerstone for service orchestration use cases that function flow fits very well.</li>
+  </ul>
+</p>
+
+<h3 class="section-heading">Serverless workflow support for functions and function flows</h3>
+<p>
+  <a href="https://serverlessworkflow.github.io">Serverless Workflow</a>
+   is a CNCF specification (currently a sandbox project) that promotes a declarative approach to
+  defining workflows. Automatiko has basic support for it already from the 0.1.0 but this release brings in additional
+  enhancements to take advantage of serverless workflow based definitions with concepts of
+  <ul>
+    <li>Workflow as a Function</li>
+    <li>Workflow as a Function Flow</li>
+  </ul>
+  With this users can build up event driven workflows that execute as functions on platform like <a href="https://knative.dev">KNative</a>.
+</p>
+<p>
+  A complete example can be found in <a href="https://github.com/automatiko-io/automatiko-examples/tree/main/user-registration-sw">Automatiko exeamples</a>
+  github repository and the concept behind this example is described in <a href="https://docs.automatiko.io/main/0.5.0/examples/userregistration.html">User registration example</a>
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
