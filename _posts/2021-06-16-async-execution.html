@@ -1,0 +1,167 @@
+---
+layout: post
+title: "Asynchronous execution of workflow operations"
+subtitle: "Interact with service API of the workflow in asynchronous way"
+date: 2021-06-16 15:45:00 +0100
+background: '/img/posts/08.jpg'
+---
+
+<p>Taking control over how operations are performed from a client side - asynchronously or synchronously</p>
+
+<h2 class="section-heading">Async or sync way - that's the question</h2>
+
+
+<p>
+  Interacting with a service API might have different needs depending who is calling it or in what context.
+  At the same time not knowing how much time it will take to complete given request might be a problematic for some
+  consumers. That leads to a question how given consumer should invoke the service?
+</p>
+
+<p>
+  Service could be invoked in blocking way meaning it will wait until the request is processed completely and returns
+  the response. That is usually considered a synchronous way of interacting with a service API.
+  In many case it will be completely fine especially when the response is needed to be available to move
+  forward with business logic. A good example of that is authentication request - it does not make sense to
+  send authentication request and not to wait for the response, as based on the response an action is taken to either let the user
+  into the system or not. So such use case is a perfect fit for synchronous interation.
+</p>
+
+<p>
+  But this is not always the case - that you need to get the response directly or not have response at all. This is seen
+  more of a asynchronous way of interacting with a service API. With that, client that calls the API can instruct the service
+  that it does not want to wait for processing of the request but wants to know if the request was accepted.
+  Furthermore the client invoking the service can still be interested in the response so response from the service
+  should contain some information what to do to get the response or simply outcome of the work.
+</p>
+
+<p>
+  This brings us to the feature of Automatiko that is about to be released with 0.6.0 and that is async execution.
+</p>
+
+<h2 class="section-heading">Async execution in details</h2>
+
+<p>
+  Automatiko allows consumers of the service (one that is built out of the workflow definition) to interact with the API
+  in either synchronous (default) or asynchronous way. To make this decision clients of the API need to set the header
+  to instruct what is the mode to be used. This is actually only required if you want to interact in asynchronous way.
+</p>
+
+<p>
+  The header that controls this behavior is <code>X-ATK-Mode</code> and the value it expects is <code>async</code>.
+
+  That will simply return response directly to the caller and make the processing in the background.
+</p>
+
+<span class="caption text-muted">Sample request (curl) that instructs the API to run in async mode</span>
+<pre><code class="language-plaintext">
+  curl -X 'POST' \
+    'http://localhost:8080/scripts' \
+    -H 'accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'X-ATK-Mode: async' \
+    -d '{
+    "lastName": "doe",
+    "name": "john"
+  }'
+</code></pre>
+
+<span class="caption text-muted">Response that is returned when async mode is requested</span>
+<pre><code class="language-plaintext">
+HTTP/1.1 202 Accepted
+Content-Length: 98
+Content-Type: application/json
+
+{"id":"18cd32fe-b5cd-4b6c-b862-910f5a0bc410","lastName":"doe","name":"john"}
+</code></pre>
+
+<p>
+  With that all the work that the business logic requires is done in background and the client is not blocked waiting for its
+  completion. <b>Though the question then is - what to do if I want to get the response or outcome of the execution?</b>
+</p>
+
+<p>
+  Async mode applies to operations that alter the state of the instanceThis includes
+  <ul>
+    <li>start of new instance</li>
+    <li>update of variables (as it can trigger logic that listens to data changes e.g. conditional events)</li>
+    <li>completing of user tasks</li>
+    <li>canceling of user tasks</li>
+    <li>signals sent to workflow instance</li>
+  </ul>
+</p>
+
+<p>
+  There are at least two ways to approach it
+
+  <ul>
+    <li>Poll for outcomes</li>
+    <li>Request to post the outcomes to an URL</li>
+  </ul>
+
+  Polling for outcomes is certainly a valid option but only when we know that the instance is not finsihed. As
+  you need to be aware of that the service backed by Automatiko will remove the instance once it's done. So in some situation
+  it can be used but for sure not in all cases.
+
+  To address this limitiation of polling approach, Automatiko can post back the outcomes as soon as it's done.
+  This is based on a callback approach where the client calling the service in async mode can optionally
+  set the callback url where to post the results. This is given in similar way as the async mode meaning via
+  HTTP headers. The header that provides callback is called <code>X-ATK-Callback</code> and the value it expects is
+  valid HTTP url.
+</p>
+
+<span class="caption text-muted">Sample request (curl) that instructs the API to run in async mode with callback</span>
+<pre><code class="language-plaintext">
+  curl -X 'POST' \
+    'http://localhost:8080/scripts' \
+    -H 'accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'X-ATK-Mode: async' \
+    -H 'X-ATK-Callback: https://my.callback.url' \
+    -d '{
+    "lastName": "doe",
+    "name": "john"
+  }'
+</code></pre>
+
+<p>
+  As soon as processing of the request is completed the outcome (which is the complete data model of the workflow instance)
+  will be posted to that URL. In addition to the payload that will be posted there is an extra header set that
+  informs about the state of the workflow instance. The header that provides status information is called <code>X-ATK-Status</code>
+  and will have on of the following values
+
+  <ul>
+    <li>Active</li>
+    <li>Completed</li>
+    <li>Aborted</li>
+    <li>Failed</li>
+  </ul>
+
+</p>
+
+<p>
+  Last but not least, callback might require authentication to be successfully invoked. Automatiko allows
+  to configure globally authentication mechanism to be used when invoking async callbacks. Here are the
+  supported authentications
+
+  <ul>
+    <li>none</li>
+    <li>basic</li>
+    <li>OAuth2</li>
+    <li>Custom HTTP header</li>
+    <li>on behalf - taking the header from the incoming call</li>
+    <li>query parameter on callback url e.g. api key</li>
+  </ul>
+
+  All the details on how to configure it will be described in the documentation once the release (0.6.0) is out.
+</p>
+
+<p>At the end, have a look at a short screencast showing this feature in action.</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Mg_zQrGjm_s" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+
+<p>
+  Thanks for reading and make sure to drop us feedback or ask questions about this feature or others.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
