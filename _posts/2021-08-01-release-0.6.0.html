@@ -1,0 +1,123 @@
+---
+layout: post
+title: "Automatiko 0.6.0 released"
+subtitle: "Asynchronous execution, ready to use services and more"
+date: 2021-08-01 15:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.6.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Async execution of service endpoints</li>
+   <li>Addon services ready for use (Archive and Send Email)</li>
+   <li>End of instance strategies</li>
+   <li>Google PubSub sink for Workflow as a Function Flow</li>
+   <li>Support for Apache Camel connector headers</li>
+   <li>Imporved error handling for Business Rule task</li>
+</ul>
+
+<h3 class="section-heading">Async execution of service endpoints</h3>
+
+<p>
+  In many situation awaiting response when interacting with workflow instances might not be desired behaviour. It might be due to various reasons such as
+  <ul>
+    <li>long running service invocation</li>
+    <li>poor network that can cause dropped connections</li>
+    <li>there is no need to wait for the response at all .e.g fire and forget kind of use cases</li>
+  </ul>
+  With Automatiko you can take advantage of async execution very easily by deciding on the mode on request basis.
+  That means workflow definition is not really aware of it and the responsibility how the invocation should happen is on consumer side.
+</p>
+<p>
+  Async execution is provided by an HTTP header and can also request a callback to post data once execution is completed.
+</p>
+<p>
+Have a look at <a href="https://docs.automatiko.io/main/0.6.0/components/async-execution.html">Automatiko documentation</a>
+for more information about async execution.
+</p>
+
+<h3 class="section-heading">Addon services ready for use (Archive and Send Email)</h3>
+<p>
+In many cases there are needs to simply do basic operations - like sending email to notify about created incident. Such operations
+are usually reusable and as such should be easily configured within workflow tasks. This is what has been started in
+0.6.0 release of Automatiko - an addon services. With this version following services are delivered
+<ul>
+  <li>Archive - to build archives (zip files) based on given set of files</li>
+  <li>Send email - to send email message either with templates or without them</li>
+</ul>
+</p>
+<p>
+Have a look at
+<a href="https://docs.automatiko.io/main/0.6.0/services/archive.html">Automatiko documentation</a>
+for more information about addon services provided out of the box.
+</p>
+
+
+<h3 class="section-heading">End of instance strategies</h3>
+<p>
+  When workflow instance reaches its end (either by completing successfully or by being aborted) there might be situations that
+   requires it to be handled in one way or another. For this exact purpose, end of instance strategies are provided. These allow to have different
+   behavior depending on your needs. For example due to legal requirements instances must be kept for given amount of time, or they should be
+   archived to another location for reference.
+
+  Automatiko provides three out of the box strategies:
+  <ul>
+    <li>remove</li>
+    <li>keep</li>
+    <li>archive</li>
+  </ul>
+
+  Process management UI has also been improved to support various strategies and by that you can look up
+  instances based on the status including completed and aborted.
+</p>
+
+<img class="img-fluid" src="/img/posts/11_1.png" alt="User task form image">
+<span class="caption text-muted">Process management UI with filter by instance status.</span>
+
+<p>
+Have a look at
+<a href="https://docs.automatiko.io/main/0.6.0/concepts.html#_end_of_instance_strategy">Automatiko documentation</a>
+for more information about end of instance strategies.
+</p>
+
+<h3 class="section-heading">Google PubSub sink for Workflow as a Function Flow</h3>
+<p>
+  <a href="https://docs.automatiko.io/main/0.5.0/concepts.html#_workflow_as_a_function_flow_waaff">Workflow as a Function Flow</a>
+   is a very powerful concept that allows high scalability based on <a href="https://knative.dev">KNative Eventing</a>
+   but allowing developers to focus on complete business use case rather just individual functions. Automatiko 0.6.0 brings
+   support for Google PubSub as event sink instead of default http based one. The main advantage of this sink is to be able to
+   take advantage of managed KNative environment that is Google CloudRun. With the support of this component users
+   can run workflow as a function flow directly on managed service and rely on higly scalable messaging infrastructure - Google PubSub.
+</p>
+<p>
+  A complete blog post dedicated to this topic is in the works and will be published within few days!
+</p>
+
+<h3 class="section-heading">Support for Apache Camel connector headers</h3>
+<p>
+  Apache Camel connector has been supported for quite some time. It allows to take advantage of any of the supported
+  Apache Camel connector as implementation behind message events (both sending and receiving). Until now, it had a missing feature
+  - to be able to specify headers (headers are frequently used by Apache Camel components to provide configuration).
+  Since Automatiko 0.6.0 you can specify any of the headers as part of custom attributes of the message event. All entries
+  that starts with <code>Camel</code> will be considered headers.
+</p>
+
+<h3 class="section-heading">Imporved error handling for Business Rule task</h3>
+<p>
+  When working with business rule tasks that invoke decision you can now take advantage of error handling. That can be either
+  <ul>
+    <li>boundary error event</li>
+    <li>event subprocess with error start event</li>
+  </ul>
+  When defining errors to handle decision evaluation problems error code should be set to <code>DecisionEvaluationFailure</code>.
+  In addition, error information can be mapped to workflow instance variable that will be of type <code>Map</code> with following entries:
+  <ul>
+    <li><code>error</code> - string representation of all error messages returned from the evaluation</li>
+    <li><code>results</code> - data returned from the evaluation (might be partial)</li>
+  </ul>
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
