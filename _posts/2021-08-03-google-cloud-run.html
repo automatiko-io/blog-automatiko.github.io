@@ -1,0 +1,205 @@
+---
+layout: post
+title: "Workflow as a Function Flow on..."
+subtitle: "...Google Cloud Run"
+date: 2021-08-03 15:45:00 +0100
+background: '/img/posts/12.jpg'
+---
+
+<p>Workflow as a function flow powered by completely managed service - Google Cloud Run</p>
+
+<h2 class="section-heading">Introduction</h2>
+
+<p>
+<a href="https://docs.automatiko.io/main/0.6.0/concepts.html#_workflow_as_a_function_flow_waaff" target="_blank">Workflow as a Function Flow</a> is a powerful
+ concept that allows to build business logic as complete, end to end use case but takes advantage of serverless platforms based on
+ <a href="https://knative.dev" target="_blank">Knative</a> to provide highly scalable and resilient infrastructure.
+</p>
+
+<p>
+Workflow as a Function Flow by default communicates directly with Knative Broker to
+publish events and by that trigger function invocation. This is not possible in managed
+service such as <a href="https://cloud.google.com/run" target="_blank">Google Cloud Run</a> and thus to be able to run with same characteristics
+use of Google PubSub is introduced. This enforces some additional configuration steps
+as relying on Cloud Event type attribute as trigger is not enough.
+</p>
+
+<p>
+In addition to the type attribute that is the main trigger, a source attribute of a
+Cloud event is also used. Luckily, Cloud Run with PubSub associates topic information
+(where the message come from) into the source attribute of the Cloud Event delivered by Cloud Run.
+
+This in turn is used by Automatiko to look up proper function to invoke based on the Cloud event attributes
+(type and source). Due to that, workflow and its nodes that compose the function
+must be additionally annotated to provide the topic information as a source attribute to
+filter on. All the details can be found in the Configuration section of this article.
+</p>
+
+<p>
+A complete example can be found in
+<a href="https://github.com/automatiko-io/automatiko-examples/tree/main/user-registration-gcp-cloudrun" target="_blank">this repository</a>
+</p>
+
+<h2 class="section-heading">Get started with Google Cloud Run</h2>
+
+<p>
+Have a look at the <a href="https://cloud.google.com/run" target="_blank">Google Cloud Run documentation</a> to get started with the offering as such. Once you
+have environment ready to use you can try it out with Automatiko service running as Function Flow.
+</p>
+
+<h2 class="section-heading">Configuration</h2>
+
+<h3 class="section-heading">Dependencies</h3>
+<p>
+  Configuration of the project is rather simple, once you create a project based on
+  <code>automatiko-function-flow-archetype</code> there is one additional dependency needed
+</p>
+<pre><code class="language-xml">
+  &lt;dependency&gt;
+    &lt;groupId&gt;io.automatiko.extras&lt;/groupId&gt;
+    &lt;artifactId&gt;automatiko-gcp-pubsub-sink&lt;/artifactId&gt;
+  &lt;/dependency&gt;
+</code></pre>
+<p>
+This dependency brings in Google PubSub event sink that will publish events for each function invocation
+during the instance execution. All data will flow through the PubSub topics, thus they must be created in advance.
+</p>
+<h3 class="section-heading">Topics in PubSub</h3>
+<p>
+Each function invocation will use dedicated topic, for that you need to create these topics using either
+Google Cloud Console or Google Cloud CLI.
+</p>
+<p>
+Names of the topics are up to you to define though it common to use similar to package names format
+e.g. <code>io.automatiko.examples.userRegistration</code>
+</p>
+<h3 class="section-heading">Link functions with topics - via workflow</h3>
+<p>
+Once the topics are defined, they need to be linked to functions. That is done via <code>Custom Attributes</code>
+of both process and nodes that will form the functions.
+</p>
+<p>
+The entry point of the workflow is the first function we need to link to a topic. To do so, add following
+custom attribute on the process level (just click on the canvas and open properties panel)
+<img class="img-fluid" src="/img/posts/12_1.png" alt="User task form image">
+<span class="caption text-muted">Custom attributes on projcess level with function filter.</span>
+
+<ul>
+    <li>Name of the attribute - <code>functionFilter</code></li>
+    <li>Value of the attribute - <code>source=//pubsub.googleapis.com/projects/{quarkus.google.cloud.project-id}/topics/TOPIC_NAME</code></li>
+</ul>
+</p>
+<p>
+Perform same thing for all functions defined in your workflow (via tasks).
+<img class="img-fluid" src="/img/posts/12_2.png" alt="User task form image">
+<span class="caption text-muted">Custom attributes on task level with function filter.</span>
+
+</p>
+<p>
+A small explanation is needed when it comes to this <code>functionFilter</code> attribute.
+What is defined here is that given function will react to events when they come from a given topic. Where
+
+<ul>
+  <li><code>TOPIC_NAME</code> must be replaced with actual name of the topic created</li>
+  <li><code>{quarkus.google.cloud.project-id}</code> will be automatically replaced during build time based on project id configured</li>
+</ul>
+
+The reason why this is required is that Google Cloud Run (when using with PubSub) will deliver Cloud Events always with the same
+value set on <code>type</code> attribute and that is <code>google.cloud.pubsub.topic.v1.messagePublished</code>. That's why
+the extra filtering is required to be able to properly look up functions to invoke for incoming events.
+
+This is the main difference with vanialla Knative setup where access to the broker is allowed and thus the type attribute is the only thing needed.
+</p>
+
+
+<h3 class="section-heading">Project configuration</h3>
+<p>
+Project configuration that resides inside <code>src/main/resources/application.properties</code> requires to have following defined
+</p>
+<pre><code class="language-plaintext">
+  quarkus.automatiko.target-deployment=gcp-pubsub
+  quarkus.google.cloud.project-id=YOUR_PROJECT_ID
+</code></pre>
+<p>
+<code>YOUR_PROJECT_ID</code> must be replaced with actual project id that this service will be deployed to.
+</p>
+
+<h2 class="section-heading">Build and Deployment</h2>
+
+Once the configuration of the service is done and Google Cloud platform account (topics included)
+it's time to build it and deploy.
+
+<p>
+  To build it it's as easy as just running single command.
+</p>
+<pre><code class="language-plaintext">
+  mvn clean package -Pcontainer-native
+</code></pre>
+
+<p>NOTE: This command requires to have Docker installed as it will build docker container wiht native image in it.</p>
+
+Once the service is built as docker image you can push it out to container registry. As an example you can follow these two commands
+to push it to Google Cloud Platform container registry.
+
+<pre><code class="language-plaintext">
+  docker tag IMAGE gcr.io/GOOGLE_PROJECT_ID/automatiko/user-registration-gcp-cloudrun:latest
+  docker push gcr.io/GOOGLE_PROJECT_ID/automatiko/user-registration-gcp-cloudrun:latest
+</code></pre>
+
+<p>Following must be replaced with actual values matching your service and Google Project
+<ul>
+  <li>IMAGE - image id of the built container image</li>
+  <li>GOOGLE_PROJECT_ID - id if your Google Cloud Platform project</li>
+  <li>automatiko/user-registration-gcp-cloudrun - container image name</li>
+  <li>latest - container image tag</li>
+</ul>
+
+Once the image is pushed you can deploy the service to Google Cloud Run.
+</p>
+
+<p>
+Essentialy it's to follow the wizzard in the Google Cloud Console with the important note to create
+event triggers for each function. These event triggers are of type
+
+<ul>
+  <li>Cloud Pub/Sub</li>
+  <li>Cloud Pub/Sub topic</li>
+</ul>
+
+<img class="img-fluid" src="/img/posts/12_3.png" alt="Create triggers for Cloud Run service image">
+<span class="caption text-muted">Create triggers for Cloud Run service.</span>
+
+
+This should be done for all the topics that are linked to functions in your workflow.
+</p>
+
+<p>Following video shows the steps to deploy to Google Cloud Run in details.</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/50Gu3IodYQg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+
+
+<h2 class="section-heading">Execution</h2>
+
+To start workflow execution (which will execute as function flow) publish new message to the topic
+that is linked with the workflow.
+
+<img class="img-fluid" src="/img/posts/12_4.png" alt="Publish message to start workflow execution image">
+<span class="caption text-muted">Publish message to start workflow execution.</span>
+
+<h2 class="section-heading">Conclusion</h2>
+
+<p>
+This article introduced you to use Automatiko and its Workflow as a Function Flow to execute
+on Google Cloud Run as a managed Knative environment. At the same time to reduce limitation
+of having direct access to Knative Broker, it uses Google PubSub as the way of exchanging events to provide
+efficient and highly scalable infrastructure.
+</p>
+
+<p>
+This is just the beginning and number of improvements are in the works such as automatic generation of scripts
+to create topics and deploy the service with triggers. So stay tuned and let us know (via twitter or mailing list)
+what would you like to see more in this area.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
