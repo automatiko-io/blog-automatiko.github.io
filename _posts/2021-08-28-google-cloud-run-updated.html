@@ -2,16 +2,19 @@
 layout: post
 title: "Workflow as a Function Flow on..."
 subtitle: "...Google Cloud Run"
-date: 2021-08-03 15:45:00 +0100
+date: 2021-08-27 15:45:00 +0100
 background: '/img/posts/12.jpg'
 ---
-
-<h1><center>This blog post is outdated, have a look at update to it that can be found
-<u><a href="https://blog.automatiko.io/2021/08/28/google-cloud-run-updated.html">here</a></u></center></h1>
 
 <p>Workflow as a function flow powered by completely managed service - Google Cloud Run</p>
 
 <h2 class="section-heading">Introduction</h2>
+
+
+<p>
+This is a follow up blog post about Workflow as a function flow on Google Cloud Run that focuses on 0.7.0
+release that brings significant improvements in the area.
+</p>
 
 <p>
 <a href="https://docs.automatiko.io/main/0.6.0/concepts.html#_workflow_as_a_function_flow_waaff" target="_blank">Workflow as a Function Flow</a> is a powerful
@@ -67,53 +70,6 @@ have environment ready to use you can try it out with Automatiko service running
 This dependency brings in Google PubSub event sink that will publish events for each function invocation
 during the instance execution. All data will flow through the PubSub topics, thus they must be created in advance.
 </p>
-<h3 class="section-heading">Topics in PubSub</h3>
-<p>
-Each function invocation will use dedicated topic, for that you need to create these topics using either
-Google Cloud Console or Google Cloud CLI.
-</p>
-<p>
-Names of the topics are up to you to define though it common to use similar to package names format
-e.g. <code>io.automatiko.examples.userRegistration</code>
-</p>
-<h3 class="section-heading">Link functions with topics - via workflow</h3>
-<p>
-Once the topics are defined, they need to be linked to functions. That is done via <code>Custom Attributes</code>
-of both process and nodes that will form the functions.
-</p>
-<p>
-The entry point of the workflow is the first function we need to link to a topic. To do so, add following
-custom attribute on the process level (just click on the canvas and open properties panel)
-<img class="img-fluid" src="/img/posts/12_1.png" alt="User task form image">
-<span class="caption text-muted">Custom attributes on projcess level with function filter.</span>
-
-<ul>
-    <li>Name of the attribute - <code>functionFilter</code></li>
-    <li>Value of the attribute - <code>source=//pubsub.googleapis.com/projects/{quarkus.google.cloud.project-id}/topics/TOPIC_NAME</code></li>
-</ul>
-</p>
-<p>
-Perform same thing for all functions defined in your workflow (via tasks).
-<img class="img-fluid" src="/img/posts/12_2.png" alt="User task form image">
-<span class="caption text-muted">Custom attributes on task level with function filter.</span>
-
-</p>
-<p>
-A small explanation is needed when it comes to this <code>functionFilter</code> attribute.
-What is defined here is that given function will react to events when they come from a given topic. Where
-
-<ul>
-  <li><code>TOPIC_NAME</code> must be replaced with actual name of the topic created</li>
-  <li><code>{quarkus.google.cloud.project-id}</code> will be automatically replaced during build time based on project id configured</li>
-</ul>
-
-The reason why this is required is that Google Cloud Run (when using with PubSub) will deliver Cloud Events always with the same
-value set on <code>type</code> attribute and that is <code>google.cloud.pubsub.topic.v1.messagePublished</code>. That's why
-the extra filtering is required to be able to properly look up functions to invoke for incoming events.
-
-This is the main difference with vanialla Knative setup where access to the broker is allowed and thus the type attribute is the only thing needed.
-</p>
-
 
 <h3 class="section-heading">Project configuration</h3>
 <p>
@@ -157,30 +113,40 @@ to push it to Google Cloud Platform container registry.
   <li>latest - container image tag</li>
 </ul>
 
-Once the image is pushed you can deploy the service to Google Cloud Run.
+Once the image is pushed you can deploy the service to Google Cloud Run by executing <code>gcloud</code> scripts.
+These scripts are located inside <code>target/scripts</code> folder where you can find both deploy and undeploy scripts.
 </p>
 
 <p>
-Essentialy it's to follow the wizzard in the Google Cloud Console with the important note to create
-event triggers for each function. These event triggers are of type
-
-<ul>
-  <li>Cloud Pub/Sub</li>
-  <li>Cloud Pub/Sub topic</li>
-</ul>
-
-<img class="img-fluid" src="/img/posts/12_3.png" alt="Create triggers for Cloud Run service image">
-<span class="caption text-muted">Create triggers for Cloud Run service.</span>
-
-
-This should be done for all the topics that are linked to functions in your workflow.
+A sample deploy script is illustrated below.
 </p>
 
-<p>Following video shows the steps to deploy to Google Cloud Run in details.</p>
-<center>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/50Gu3IodYQg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</center>
+<pre><code class="language-plain">
 
+  gcloud pubsub topics create io.automatiko.examples.userRegistration.registrationfailed --project=CHANGE_ME
+  gcloud pubsub topics create io.automatiko.examples.userRegistration.notifyservererror --project=CHANGE_ME
+  gcloud pubsub topics create io.automatiko.examples.userRegistration.userregistered --project=CHANGE_ME
+  gcloud pubsub topics create io.automatiko.examples.userRegistration.notifyregistered --project=CHANGE_ME
+  gcloud pubsub topics create io.automatiko.examples.userRegistration.registeruser --project=CHANGE_ME
+  gcloud pubsub topics create io.automatiko.examples.userRegistration.invaliddata --project=CHANGE_ME
+  gcloud pubsub topics create io.automatiko.examples.userRegistration.generateusernameandpassword --project=CHANGE_ME
+  gcloud pubsub topics create io.automatiko.examples.userRegistration.alreadyregistered --project=CHANGE_ME
+  gcloud pubsub topics create io.automatiko.examples.userRegistration.getuser --project=CHANGE_ME
+  gcloud pubsub topics create io.automatiko.examples.userRegistration --project=CHANGE_ME
+
+  gcloud eventarc triggers create notifyservererror --event-filters="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=user-registration-gcp-cloudrun --destination-run-path=/ --transport-topic=io.automatiko.examples.userRegistration.notifyservererror --location=us-central1
+  gcloud eventarc triggers create notifyregistered --event-filters="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=user-registration-gcp-cloudrun --destination-run-path=/ --transport-topic=io.automatiko.examples.userRegistration.notifyregistered --location=us-central1
+  gcloud eventarc triggers create registeruser --event-filters="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=user-registration-gcp-cloudrun --destination-run-path=/ --transport-topic=io.automatiko.examples.userRegistration.registeruser --location=us-central1
+  gcloud eventarc triggers create generateusernameandpassword --event-filters="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=user-registration-gcp-cloudrun --destination-run-path=/ --transport-topic=io.automatiko.examples.userRegistration.generateusernameandpassword --location=us-central1
+  gcloud eventarc triggers create getuser --event-filters="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=user-registration-gcp-cloudrun --destination-run-path=/ --transport-topic=io.automatiko.examples.userRegistration.getuser --location=us-central1
+  gcloud eventarc triggers create userregistration --event-filters="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=user-registration-gcp-cloudrun --destination-run-path=/ --transport-topic=io.automatiko.examples.userRegistration --location=us-central1
+
+  gcloud run deploy user-registration-gcp-cloudrun --platform=managed --image=gcr.io/CHANGE_ME/automatiko/user-registration-gcp-cloudrun:0.0.0-SNAPSHOT --region=us-central1
+  </code>
+</pre>
+<p>
+These scripts are complete set of commands to successfully push a workflow as a function flow service to Google Cloud Run.
+</p>
 
 <h2 class="section-heading">Execution</h2>
 

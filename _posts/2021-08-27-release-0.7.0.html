@@ -1,0 +1,177 @@
+---
+layout: post
+title: "Automatiko 0.7.0 released"
+subtitle: "GraphQL service interface, receive email integration, correlation between emails"
+date: 2021-08-26 1:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.7.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>GraphQL service interface</li>
+   <li>Multiple error codes on single error event</li>
+   <li>Google Cloud Run integration simplified</li>
+   <li>Sending emails correlated with workflow instance</li>
+   <li>Receiving emails and correlate with workflow instance</li>
+   <li>Use of functions inside data assignments</li>
+   <li>Introducing Automatiko test support module</li>
+</ul>
+
+<h3 class="section-heading">GraphQL service interface</h3>
+
+<p>
+Automatiko builds a REST service interface for every workflow definition. This is the main
+entry point to the service and exposes all possible operation as defined in the workflow.
+With 0.7.0 release users can enable to also expose the service as GraphQL interface (in addition
+to REST api).
+</p>
+<p>
+A dedicated blog post will be soon published showing GraphQL interface of the service in details.
+</p>
+
+<p>
+It comes with all the same features as REST api and additionally provide subscriptions for
+most common operations
+
+<ul>
+  <li>workflow instances created</li>
+  <li>workflow instances completed</li>
+  <li>workflow instances aborted</li>
+  <li>workflow instances in error</li>
+</ul>
+Users can simply subscribe to the events by connecting to <code>/grapqhql</code> endpoint.
+</p>
+<p>
+GraphQL interface exposes queries, mutations and subscriptions for each workflow definition found in the service.
+</p>
+
+<h3 class="section-heading">Multiple error codes on single error event</h3>
+<p>
+Sometimes when dealing with error handling, given service can return multiple error codes that the workflow
+logic should treat in the same way. Until now, users would have to define different error to deal with each
+error type identified by error code. With this release it is as simple as to specify list of error codes to handle
+as comma separated set of error code (as illustrated in the below picture).
+</p>
+<img class="img-fluid" src="/img/posts/13_2.png" alt="Multiple error codes on single error">
+<span class="caption text-muted">Multiple error codes on single error.</span>
+
+
+
+<h3 class="section-heading">Google Cloud Run integration simplified</h3>
+<p>
+  Using workflow as a function flow together with Google Cloud Run has been introduced in 0.6.0 release.
+  At that time there was a lot of additional steps needed to configure it and deploy. With this release
+  this has been significantly simplified and requires only two things
+
+  <ul>
+    <li>add dependency to pubsub sink</li>
+    <li>configure deployment target and google project id in <code>application.properties</code></li>
+  </ul>
+
+  Once these are done, the generated project will be fully equipped with all the things needed to deploy in Google
+  Cloud Run. More over, all <code>gcloud</code> commands needed to deploy it, are also generated and can be found in
+  <code>target/scripts</code> folder. It comes with both deploy and undeploy scripts.
+</p>
+
+
+
+<h3 class="section-heading">Sending emails correlated with workflow instance</h3>
+<p>
+  Recently introduced <code>SendEmailService</code> addons service have been improved to send emails that are
+  correlated with workflow instance data. In most of the cases where workflow is sending emails there is a need
+  to keep track where does this email come from and in case a reply should be consumed by the same workflow
+  instance. With correlated emails this is really easy to achieve.
+</p>
+<p>
+  There are several new methods in the <code>SendEmailService</code> class that allows to pass correlation information
+  to be included in the outgoing email. This in turn allows to easily receive emails and associate it with the workflow instance
+  based on correlation information.
+</p>
+
+<h3 class="section-heading">Receiving emails and correlate with workflow instance</h3>
+<p>
+As a new addon service, in similar area as sending email service a receive email service has been added in this release.
+This service mainly focuses on connectivity for receiving emails as part of workflow definition which is expressed as
+message events. In addition to that there are ready to use <code>InputConverter</code> that are responsible for mapping
+email body into data objects that will be used within workflow definition. Here is a list of these input converters
+
+<ul>
+  <li><code>io.automatiko.engine.addons.services.receiveemail.EmailInputConverter</code> - a basic email extraction converter that
+  will return <code>io.automatiko.engine.addons.services.receiveemail.EmailMessage</code>
+</li>
+<li><code>io.automatiko.engine.addons.services.receiveemail.EmailAttachmentInputConverter</code> - single attachment extraction that return
+<code>io.automatiko.engine.api.workflow.files.File</code></li>
+<li><code>io.automatiko.engine.addons.services.receiveemail.EmailAttachmentsInputConverter</code> - list of attachment extraction that will return
+<code>List<io.automatiko.engine.api.workflow.files.File></code></li>
+</ul>
+</p>
+<p>
+Last but not least, the receive email addon service also provides functions that can be used in the correlation expression of the
+message event to easily correlate incoming email to workflow instance that is waiting for this email message.
+Have a look at <a href="https://docs.automatiko.io/main/0.7.0/services/receive-email.html">Automatiko documentation</a>
+for more information about receive email add on service.
+</p>
+
+<h3 class="section-heading">Use of functions inside data assignments</h3>
+<p>
+  In many cases users need to place some kind of scripts or expressions within the workflow definition,
+  for example to express gateway (decision point) conditions that look at various workflow data items.
+  To make it more maintainable Automatiko introduced concepts of <code>Functions</code>. Functions are
+  essentially public static methods that encapsulate the logic behind the function and can be referenced inside
+  the workflow just by method name. Users can provide their own, custom functions by simply implementing
+  <code>io.automatiko.engine.api.Functions</code> marker interface. All static public methods from these classes
+  will be automatically available in workflow execution.
+</p>
+<p>
+With 0.7.0 release, these functions can also be used within data mapping which helps significantly to reduce the
+boilerplate code inside the workflow definition. These functions should be placed into data mapping as expression
+wrapped with <code>#{function}</code> as illustrated in following picture.
+</p>
+<img class="img-fluid" src="/img/posts/13_1.png" alt="Function in data mapping">
+<span class="caption text-muted">Use of functions as expression in data mapping.</span>
+
+
+<h3 class="section-heading">Introducing Automatiko test support module</h3>
+<p>
+  Testability of the code (regardless if hand written or generated) is essential. Automatiko from the very
+  beginning supported end to end tests of services built based on workflow definitions. Though in some
+  cases it was quite difficult or might introduce some instability - especially when dealing with so called jobs.
+  Jobs are in many cases a background triggered task for instance timers. Thus testing them becomes a bit of an issue.
+  More over if the timer is scheduled in the service to fire off once a week, it is quite difficult to test it
+  repeatedly without the need to wait a week.
+</p>
+<p>
+To address this problem, Automatiko 0.7.0 introduced a new module, completely dedicated to testing
+<code>io.automatiko.quarkus:automatiko-test-support</code>. The main part that it comes with is an alternative
+implementation of <code>JobsService</code> that is suited for testing as it enables easy way to get hold of currently
+scheduled jobs and to trigger them.
+
+In addition it also comes with dedicated <code>QuarkusTestProfile</code> implementation that configures it automatically.
+See below a snippet how to make use of it (first make sure to add the automatiko-test-support module to your project as dependency)
+</p>
+<pre><code class="language-java">
+
+@QuarkusTest
+@TestProfile(AutomatikoTestProfile.class)
+public class VerificationTest {
+
+  @Inject
+  TestJobService jobService;
+  ...
+
+  @Test
+  public void testTimerWorkflow() throws Exception {
+    Set<String> jobs = jobService.jobIds();
+    assertEquals(1, jobs.size());
+
+    jobService.triggerProcessJob(jobs.iterator().next());
+    ...
+  }
+
+  </code>
+</pre>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
