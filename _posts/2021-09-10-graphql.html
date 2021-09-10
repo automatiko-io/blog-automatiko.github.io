@@ -1,0 +1,186 @@
+---
+layout: post
+title: "GraphQL service interface"
+subtitle: "Equip your service with GraphQL to provide more control"
+date: 2021-09-09 15:45:00 +0100
+background: '/img/posts/15.jpg'
+---
+
+<h2 class="section-heading">Over-fetching and Under-fetching ... here comes GraphQL</h2>
+
+<p>
+  Automatiko with version 0.7.0 introduced a GraphQL support for services based on workflow definition. So the first thing that
+  comes into mind is - what is GraphQL and then what can it do for me?<br/>
+  Let's focus on what the GraphQL is by taking a small quote from <a href="https://graphql.org">GraphQL website</a>.
+</p>
+
+<p><i>
+GraphQL is a query language for APIs and a runtime for fulfilling those queries with your existing data.
+GraphQL provides a complete and understandable description of the data in your API, gives clients the power to ask for exactly what they need and nothing more,
+makes it easier to evolve APIs over time, and enables powerful developer tools.
+</i></p>
+
+
+<p>
+  So there are two main aspects that GraphQL is aiming at
+
+  <ul>
+    <li>Over-fetching</li>
+    <li>Under-fetching</li>
+  </ul>
+
+  Let's tackle them one by one and then look at how it is applied in workflows.
+</p>
+
+<h2 class="section-heading">Over-fetching</h2>
+
+<p>
+  Over-fetching means that clients that consume the API fetch too much data, in other words they get more then they need.
+  That is usually due to the fact that the REST api (by default) are providing complete data set managed for the given resource path.
+  There are differnt options to improve this by following various practices or even going for OData that has filtering built in. <br/>
+  GraphQL on the othe hand was designed from ground up to make this a day one feature. It is up to the client to declare what
+  shall be returned.
+</p>
+
+<span class="caption text-muted">Query to get all vacation instances available to user john with fetching only the data needed</span>
+<pre><code class="language-plaintext">
+  query {
+    get_all_vacations(user:"john@email.com") {
+      id,
+      employee {
+        firstName,
+        manager
+      },
+      requests {
+      	request {
+          key,
+          from,
+          to
+        }
+      }
+    }
+  }
+</code></pre>
+
+<h2 class="section-heading">Under-fetching</h2>
+
+<p>
+On the other side there is under-fetching that means there are multiple calls needed to collect all the required data.
+With GraphQL you can do this in one call where you specify more than one query
+</p>
+
+<span class="caption text-muted">Collect all vacation instances and tasks for selected instance</span>
+<pre><code class="language-plaintext">
+  query {
+    get_all_vacations(user:"john@email.com") {
+      id,
+      employee {
+        firstName,
+        manager
+      },
+      requests {
+      	request {
+          key,
+          from,
+          to
+        }
+      }
+    },
+    get_vacations_tasks(id:"john@email.com", user:"john@email.com") {
+      id,
+			name,
+      formLink
+    }
+  }
+</code></pre>
+
+
+<span class="caption text-muted">Returned instances and tasks in single call</span>
+<pre><code class="language-plaintext">
+  {
+    "data": {
+      "get_all_vacations": [
+        {
+          "id": "john@email.com",
+          "employee": {
+            "firstName": "John",
+            "manager": "john@email.com"
+          },
+          "requests": [
+            {
+              "request": {
+                "key": "travel",
+                "from": "2021-11-01T01:00:00",
+                "to": "2021-11-03T01:00:00"
+              }
+            }
+          ]
+        }
+      ],
+      "get_vacations_tasks": [
+        {
+          "id": "892e1392-c2f1-46f8-bda3-51eb45d98802",
+          "name": "cancel",
+          "formLink": "/management/tasks/link/cmVxdWVzdHN8NDExOTNjZGItZmZiZi0zNmJlLThjZGYtMjMxYjI4YzU0YjE4OjY5MjY2YzY3LWU3NWMtMzQ2ZS1iOWI0LTE0NGIwNTU0MzI2ZHw4OTJlMTM5Mi1jMmYxLTQ2ZjgtYmRhMy01MWViNDVkOTg4MDJ8"
+        }
+      ]
+    }
+  }
+</code></pre>
+
+<h2 class="section-heading">Put the workflow into the picture</h2>
+
+<p>
+So how this can benefit workflow based services? Actually, there is nothing specific to workflows themselves, it is more about the abovementioned
+principles (under-fetching and over-fetching) that makes a lot of sense to workflow based services as well. Especially when there are big data sets
+that are not always needed to be provided on each call.
+</p>
+
+<p>
+To give an example, let's look at classic document approval workflow - the document itself will most likely be part of the payload
+but it is not always needed to get the content of the document. With GraphQL approach users can fetch information about document but not
+the content so making the calls much lighter.
+</p>
+
+<p>
+Under-fetching in workflows could be to fetch workflow instances in various states or for various definitions in single call.
+</p>
+
+<h2 class="section-heading">How to make use of it</h2>
+
+The setup is really simple, it just requires one additional dependency in your service
+
+<pre><code class="language-plaintext">
+  &lt;dependency&gt;
+    &lt;groupId&gt;io.quarkus&lt;/groupId&gt;
+    &lt;artifactId&gt;quarkus-smallrye-graphql&lt;/artifactId&gt;
+  &lt;/dependency&gt;
+</code></pre>
+
+<p>
+And that's it! From now on your service will be equipped with GraphQL interface. If you run in dev mode then you can
+open up the GraphQL UI that allows to easily build up queries and look at the schema. It is accessible at
+<a href="http://localhost:8080/q/graphql-ui">http://localhost:8080/q/graphql-ui</a>
+</p>
+<br/>
+<img class="img-fluid" src="/img/posts/15_1.png" alt="User task form image">
+<span class="caption text-muted">GraphQL user interface in dev mode.</span>
+
+<p>
+Another worth mentioning note is that GraphQL requires data for each mutation - this is really important when you use
+user tasks in your workflow, these tasks must have at least one input and one output defined. If these are not defined, service generation will
+fail.
+</p>
+
+<h2 class="section-heading">Let's see it in action</h2>
+
+<p>At the end, have a look at a short screencast showing this feature in action.</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/SHMIekl2KGU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+
+<p>
+  Thanks for reading and make sure to drop us feedback or ask questions about this feature or others.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
