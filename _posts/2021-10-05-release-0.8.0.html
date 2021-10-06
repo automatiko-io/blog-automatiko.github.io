@@ -1,0 +1,143 @@
+---
+layout: post
+title: "Automatiko 0.8.0 released"
+subtitle: "Non blocking service invocation, transient variables, identity functions"
+date: 2021-10-04 14:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.8.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Non blocking service invocation</li>
+   <li>Transient variables</li>
+   <li>Monitoring of messages and signals</li>
+   <li>Identity functions</li>
+   <li>GraphQL service interface dedicated module</li>
+   <li>Security context aware GraphQL subscriptions</li>
+</ul>
+
+<h3 class="section-heading">Non blocking service invocation</h3>
+
+<p>
+Service invocation is one of the most common operation performed by workflows.
+Till now, it was always expected to be synchronous or to put it in other words, blocking.
+It is not always desired to block the executing thread to wait for response of the service
+call. This is even more important when the service is a remote service such as ReST service.
+</p>
+<p>
+With 0.8.0 release it is now possible to use the non blocking approach to improve the overall
+execution of the service.
+</p>
+
+<p>
+To make use of non blocking service invocation your service needs to be one of the following:
+
+<ul>
+  <li>Java service with method that return <code>Uni<Type></code></li>
+  <li>OpenAPI operation with <code>?mode=async</code></li>
+</ul>
+With that Automatiko will use the non blocking approach to calling it.
+</p>
+<p>
+  Have a look at <a href="https://docs.automatiko.io/main/0.8.0/components/service-invocation.html">Automatiko documentation</a>
+  for more information about non blocking service invocation.
+</p>
+
+
+<h3 class="section-heading">Transient variables</h3>
+<p>
+Sometimes there is a need to have workflow instance variables that are required for execution but at the same time
+should not be stored. In addition, there should be no additional work required from the workflow developer to keep track of
+such variables and clean them manually.
+</p>
+<p>
+Transient variables have been introduced to address exactly this need. By tagging data object (aka variable) with
+<code>transient</code> tag, it will make the variable to keep its value until workflow instance
+is persisted. The value will never be attempted to be persisted and thus on reload the value of the variable will be
+<code>null</code>. That simple, no need to keep track of it any more, all handled automatically.
+</p>
+
+
+<h3 class="section-heading">Monitoring of messages and signals</h3>
+<p>
+  Monitoring of Automatiko has been moved to <code>Micrometer</code> to take advantage of new features. As part of this work
+  there were also additional improvements that brings several new metrics
+</p>
+<p>
+  <b>Messages</b>
+
+  <ul>
+    <li><code>automatiko.process.messages.received.count</code> - conter for all messages received</li>
+    <li><code>automatiko.process.messages.consumed.count</code> - counter for all messages that were received and consumed</li>
+    <li><code>automatiko.process.messages.missed.count</code> - counter for all messages that were received and not consumed</li>
+    <li><code>automatiko.process.messages.failed.count</code> - counter for all messages that were received but failed to be consumed</li>
+    <li><code>automatiko.process.messages.produced.count</code> - all messages that were produced</li>
+  </ul>
+
+  <b>Signals</b>
+
+  <ul>
+    <li><code>automatiko.process.signals.count</code> - all signals that where received and processed by workflow instance</li>
+  </ul>
+</p>
+
+
+
+<h3 class="section-heading">Identity functions</h3>
+<p>
+  Working with workflows in secured environment (when access to the service interface requires at least authentication) in many situations
+  requires to gain access to information about identity of the current request. For example, to be able to check if given request
+  belongs to a user who is a member of given group, or to be able to assign user task based on the caller's identity.
+</p>
+<p>
+  With 0.8.0, there are several functions (that can be directly used in your worklfow definition) that simplify access to
+  identity information
+
+  <ul>
+    <li><code>identityName()</code> - returns identity name if found otherwise null</li>
+    <li><code>identityName(String whenNotFound)</code> - returns identity name if found otherwise the given value</li>
+    <li><code>identityProperty(String property)</code> - returns property associated with identity e.g. email</li>
+    <li><code>identityProperty(String property, String defaultValue)</code> - returns property associated with identity e.g. email or defaultValue if no such property is found</li>
+    <li><code>identityHasRole()</code> - verifies if identity has given role</li>
+    <li><code>identityHasAnyRole(String...roles)</code> - verifies if identity has any of the given roles</li>
+    <li><code>identityHasAllRoles(String...roles)</code> - verifies if identity has all of the given roles</li>
+  </ul>
+</p>
+
+
+<h3 class="section-heading">GraphQL service interface dedicated module</h3>
+<p>
+GraphQL service interface has been introduced in 0.7.0 and it required non automatiko dependency to be specified.
+To make things easier, a dedicated GraphQL addon module has been introduced. It's now as easy as adding following dependency
+to your project to enable GraphQL service interface generation.
+
+<pre><code class="language-plaintext">
+  &lt;dependency&gt;
+    &lt;groupId&gt;io.automatiko.addons&lt;/groupId&gt;
+    &lt;artifactId&gt;automatiko-graphql-addon&lt;/artifactId&gt;
+  &lt;/dependency&gt;
+</code></pre>
+</p>
+
+<h3 class="section-heading">Security context aware GraphQL subscriptions</h3>
+<p>
+  As part of the dedicated addon for GraphQL, there has been as well improved support for subscription that now covers following events
+
+  <ul>
+    <li>workflow instances created</li>
+    <li>workflow instances completed</li>
+    <li>workflow instances aborted</li>
+    <li>workflow instances in error</li>
+    <li>workflow instances changed</li>
+  </ul>
+
+  All subscriptions are security context aware meaning events published to these subscriptions will be filtered based on thier identity
+  information (name and roles). This will ensure that data pushed to callers will include only data that they are allowed to receive.
+</p>
+
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
