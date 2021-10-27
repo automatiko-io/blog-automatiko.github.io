@@ -1,0 +1,180 @@
+---
+layout: post
+title: "Automatiko 0.9.0 released"
+subtitle: "Fault tolerance support, external file storage, data encryption"
+date: 2021-10-26 14:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.9.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Fault tolerance for service invocation</li>
+   <li>Data encryption</li>
+   <li>Enternal storage for files</li>
+   <li>Process management UI improvements</li>
+   <li>GraphQL user task subscription and error handling improvements</li>
+   <li>Workflow as Function and Function flow DevUI improvements</li>
+</ul>
+
+<h3 class="section-heading">Fault tolerance for service invocation</h3>
+
+<p>
+  When working with workflows majority of work is performed by some services. These services can be
+  local (part of the workflow) or remote (various services exposed via different means). Regardless of
+  the type of service they might fail and by that have impact on running workflows.
+</p>
+<p>
+  Automatiko will handle errors in various ways to make sure no information is lost and avoid unneeded re-execution
+  of tasks. But this might be not be enough, especially in situations where
+
+  <ul>
+    <li>service is not responding in timely manner</li>
+    <li>service is overloaded</li>
+  </ul>
+
+  For these kind of issues there might be different solutions and that's exactly what Automatiko introduced in
+  this release - a fault tolerance addon.
+</p>
+<p>
+  Fault tolerance addon comes with two main features
+
+  <ul>
+    <li>circuit breaker</li>
+    <li>timeout</li>
+  </ul>
+
+  Circuit breaker allows to stop hitting failing service all over again and monitor its availability. As soon as it
+  is up and running again it will not only open the new instance to call that service but will also resume workflow
+  instances that failed because of that problem. In other words it will selfheal the service instances.
+<br/>
+  Timeout on the other hand will keep track of service invocation duration. If configured on a service task it will
+  automatically cancel the exeecution and throw an exception that can be easily managed via error handling machanism.
+</p>
+
+<p>
+  Have a look at <a href="https://docs.automatiko.io/main/0.9.0/components/service-invocation.html#_fault_tolerance">Automatiko documentation</a>
+  for more information about fault tolerance for service invocation.
+</p>
+
+
+<h3 class="section-heading">Data encryption</h3>
+
+<p>
+  In environments where workflows deal with sensitive data, protection of data is important not just during execution but also
+  when stored. Encryption at transit and encryption at rest are the common contepts in this aspect. Automatiko introduces
+  support for encryption at rest that can be enabled easily regardless of the type of data store used. This mainly applies to
+  workflow instance persistence but is also applicable to other compoents such as external file storage described below.
+</p>
+
+<p>
+  Have a look at <a href="https://docs.automatiko.io/main/0.9.0/components/security.html#_encryption_of_data_at_rest">Automatiko documentation</a>
+  for more information about data encryption.
+</p>
+
+<h3 class="section-heading">Enternal storage for files</h3>
+
+<p>
+  Handling files within workflow is quite common. Depending of type of files they might be considered as regular data objects,
+  meaning their content will be stored as part of the workflow instance. In many cases storing files externally has several benefits
+
+  <ul>
+    <li>files are stored in secure and efficient environment that is dedicated to file storage</li>
+    <li>offloading workflow instance storage from persisting file content that might be of significant size</li>
+    <li>allow to access it directly via sharable links</li>
+  </ul>
+
+  With this release, users are given three types of external storage for thier files
+
+  <ul>
+    <li>local file system</li>
+    <li>Amazon S3</li>
+    <li>Google Cloud Storage</li>
+  </ul>
+
+  Regardless of what type of storage is selected there is nothing specific to them on the workflow level. They integrate
+  seamlessly with complete execution environment.
+</p>
+<p>
+  Have a look at <a href="https://docs.automatiko.io/main/0.9.0/components/files.html">Automatiko documentation</a>
+  for more information about external storage of files managed by workflows.
+</p>
+
+<h3 class="section-heading">Process management UI improvements</h3>
+
+<p>
+  Process management addon is one of the most popular and their simple yet useful UI as well. This release comes with
+  few small enhancements to make it even more useful.
+
+  <ul>
+    <li>UI is now mobile friendly to allow to have quick insights into the running service</li>
+    <li>export operation of the instance is avilable from instance details view</li>
+  </ul>
+</p>
+
+<h3 class="section-heading">GraphQL user task subscription and error handling improvements</h3>
+
+<p>
+  GraphQL service interface has been very well received from its introduction in 0.7.0 and has been further improved
+  in 0.8.0 and 0.9.0. With this release main part is about dedicated <code>User Tasks</code> subscription that allows
+  to easily build up task inbox that will listen to new user tasks being created and deliver them as notifications.
+  All in secure way meaning only tasks assigned to the user who subscribed are going to be delivered.
+</p>
+<p>
+  In addition to user task subscription few additional improvements have been included
+
+  <ul>
+    <li>update of data model of workflow instance</li>
+    <li>error information including workflow related error messages instead of raw <code>DataFetching</code> error</li>
+    <li>signal handling both in top level workflows and sub workflows</li>
+  </ul>
+</p>
+
+<h3 class="section-heading">Workflow as Function and Function flow DevUI improvements</h3>
+
+<p>
+  A Dev UI (that is accessible via <code>/q/dev</code> endpoint when running in development mode) has now been improved
+  for workflow as function and workflow as function flow. Each has now handy button to copy a <code>cURL</code> command
+  to execute particular function.
+</p>
+<img class="img-fluid" src="/img/posts/16_1.png" alt="Copu cURL command from Dev UI">
+<span class="caption text-muted">Copu cURL command from Dev UI.</span>
+
+<p>
+  Once you click on <code>Copy cURL</code> button you will get complete curl command in the clipboard
+</p>
+<p>With binary mode for cloud events</p>
+<pre><code class="language-json">
+  curl -X POST http://localhost:8080/ -H "Content-Type:application/json; charset=UTF-8" -H "ce-id:9960c474-2483-4ef8-aec2-7a758f434dcc" -H "ce-specversion:1.0" -H "ce-type:io.automatiko.examples.userRegistration" -H "ce-source:string" -d "{\"user\":\"{
+\"id\":\"\",
+\"username\":\"string\",
+\"firstName\":\"string\",
+\"lastName\":\"string\",
+\"email\":\"string\",
+\"password\":\"string\",
+\"phone\":\"string\",
+\"userStatus\":\"\"
+}\"}"
+</code>
+</pre>
+
+<p>With structured mode for cloud events</p>
+<pre><code class="language-json">
+  curl -X POST http://localhost:8080/ -H "Content-Type:application/cloudevents+json; charset=UTF-8" -d "{\"id\":\"9960c474-2483-4ef8-aec2-7a758f434dcc\",\"specversion\":\"1.0\",\"type\":\"io.automatiko.examples.userRegistration\",\"source\":\"string\",\"datacontenttype\":\"application/json;charset=UTF-8\",\"data\":{\"user\":\"{
+  \"id\":\"\",
+  \"username\":\"string\",
+  \"firstName\":\"string\",
+  \"lastName\":\"string\",
+  \"email\":\"string\",
+  \"password\":\"string\",
+  \"phone\":\"string\",
+  \"userStatus\":\"\"
+  }\"}}"
+</code>
+</pre>
+
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
