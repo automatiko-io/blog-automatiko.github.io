@@ -1,0 +1,128 @@
+---
+layout: post
+title: "Automatiko 0.10.0 released"
+subtitle: "Workflow as function and function flow improvements, multi module projects"
+date: 2021-11-26 14:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.10.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Workflow as function flow improvements</li>
+   <li>Workflow as function improvements</li>
+   <li>Support for multi module projects</li>
+   <li>Workflow instance metadata on service interface</li>
+   <li>Export and import support with external file storage</li>
+</ul>
+
+<h3 class="section-heading">Workflow as function flow improvements</h3>
+
+<p>
+  Workflow as function flow has been significantly improved to provide support for subprocesses that
+  act as functions. So users can use more advanced constructs to allow use of process composition
+  for function flows as well.
+</p>
+<p>
+  In addition, workflow as a function flow is now fully version aware meaning it will use version
+  number of the workflow to include in the Cloud Event type attribute so events sent are versioned
+  in the same way as workflow itself.
+</p>
+<p>
+  Lastly, workflow as a function flow allows to use message events (both catch and throw) to
+  publish events that will be consumed by other services or functions. For catching messages
+  that are used for receiving messages allow to have two types of correlation:
+  <ul>
+    <li>explicit - sent workflow instance id as subject attribute of Cloud Event message</li>
+    <li>resolved - based on <code>correlationExpression</code> defined on the message to find which workflow instances should consume the message</li>
+  </ul>
+</p>
+
+<p>
+  Have a look at <a href="https://docs.automatiko.io/main/0.10.0/workflow-function-flow.html">Automatiko documentation</a>
+  for more information about fault workflow as a function flow.
+</p>
+
+
+<h3 class="section-heading">Workflow as function improvements</h3>
+
+<p>
+  Workflow as a function has also been improved especially in terms of deployment options. Archetype for
+  workflow as a function flow comes with preconfigured maven profiles for
+
+  <ul>
+    <li>Azure Functions - profile name is <code>azure</code></li>
+    <li>Google Cloud Functions - profile name is <code>gcp</code></li>
+    <li>Amazon Lambda - profile name is <code>lambda</code></li>
+  </ul>
+</p>
+
+<p>
+  A brand new example <a href="https://docs.automatiko.io/main/0.10.0/examples/userregistration-function.html">User registration function example</a>
+  has been provided that illustrates workflow as a function in action that can be deployed to Azure Functions or
+  Google Cloud Functions.
+</p>
+
+<p>
+  Have a look at <a href="https://docs.automatiko.io/main/0.10.0/workflow-function.html">Automatiko documentation</a>
+  for more information about workflow as a function.
+</p>
+
+<h3 class="section-heading">Support for multi module projects</h3>
+
+<p>
+  Until version 0.10.0 Automatiko allowed to use only local (existing in the project resources) workflow definitions.
+  That caused rather hard limit on reuse of workflow definitions so users were forced to always copy workflow definitions
+  between projects. With this release you can take advantage of multi module projects which allows to simply rely on
+  dependencies to include in the project and main (top level) project will be the one that will have access to all workflow
+  definitions.
+</p>
+<p>
+  Have a look at <a href="https://github.com/automatiko-io/automatiko-engine/tree/main/integration-tests/automatiko-include-models">sample project using this approach</a>.
+</p>
+
+<p>Following video shows this feature in action.</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/I7sNvLDfuR8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+
+<h3 class="section-heading">Workflow instance metadata on service interface</h3>
+
+<p>
+  Service interface (REST or GraphQL) exposes workflow data but do not allow to get access to some workflow instance metadata such as
+
+  <ul>
+    <li><code>id</code> - unique identifier in UUID format</li>
+    <li><code>businessKey</code> - optional alternate key that is more domain specific</li>
+    <li><code>description</code> - description of the workflow instance</li>
+    <li><code>state</code> - state of the workflow instance (active, completed, etc)</li>
+    <li><code>tags</code> - workflow instance tags that can be used for correlation</li>
+  </ul>
+</p>
+<p>
+  This is quite useful to know when interacting with service interface and to provide more context information on the client. For instance
+  building list of instances thatcan be easily annotated with tags the workflow instance has. This is now possible and can be controlled
+  on individual request level.
+</p>
+<p>
+  Metadata is disabled by default and requires to be explicitly asked for. REST api allows to simply enable it via
+  <code>metadata=true</code> query parameter and this will attach <code>metadata</code> attribute to the response.
+</p>
+
+<h3 class="section-heading">Export and import support with external file storage</h3>
+
+<p>
+  Automatiko 0.9.0 introduced support for files stored in external locations (like file system, Amazon S3, Google Storage)
+  but that feature was not supported for importing and exporting of workflow instances. 0.10.0 release fills this gap
+  and properly handles files stored in external locations to
+
+  <ul>
+    <li>upon export external file content is fetched and assigned to exported document</li>
+    <li>on import files are stored in external location automatically</li>
+  </ul>
+</p>
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
