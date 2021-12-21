@@ -1,0 +1,93 @@
+---
+layout: post
+title: "Automatiko 0.11.0 released"
+subtitle: "Improved messaging for JMS and AMQP, MongoDB persistence"
+date: 2021-12-20 14:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.11.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>MongoDB based persistence</li>
+   <li>JMS support for messaging</li>
+   <li>AMQP support for messaging</li>
+   <li>Enhancements in producing messages</li>
+</ul>
+
+<h3 class="section-heading">MongoDB based persistence</h3>
+
+<p>
+  MongoDB is a popular document based data base and provides really good support for cloud based deployments. It has flexible schema
+  which allows to build up sofisticated solution in document manner. Workflows have a nice use of such approach where variables of the
+  workflow intance can be stored as a sub document and thus can be target for queries.
+  Automatiko, with release 0.11.0 comes with support for MongoDB based persistence for both workflow instances and jobs.
+</p>
+
+<p>
+  Have a look at <a href="https://docs.automatiko.io/main/0.11.0/components/persistence.html">Automatiko documentation</a>
+  for more information about MongoDB based persistence.
+</p>
+
+
+<h3 class="section-heading">JMS support for messaging</h3>
+
+<p>
+  JMS is still very widely used, even though there is so much focus on newer alternatives like AMQP or Apache Kafka.
+  JMS provides very powerful integration within Java ecosystem and nicely works with majority of MoM offerings such as
+  IBM MQ, AchtiveMQ and many others. Automatiko introduced support for JMS to allow to cover traditional messaging use cases via workflows
+  where messages need to rely on message properties or message selector to only react to messages of interest.
+</p>
+<p>
+  JMS support comes with capabilities to
+
+  <ul>
+    <li>consume messages including correlation and message selectors as defined by JMS spec</li>
+    <li>produce messages</li>
+  </ul>
+</p>
+
+<p>
+  Have a look at <a href="https://docs.automatiko.io/main/0.11.0/components/messaging.html">Automatiko documentation</a>
+  for more information about JMS messaging support.
+</p>
+
+<h3 class="section-heading">AMQP support for messaging</h3>
+
+<p>
+  AMQP is gaining more popularity around messaging platforms and thus allows really comprehensive approach to exchange
+  messages. Automatiko provides abstraction layer via workflow constructs (like message events) to publish messages
+  to various messaging providers. In this release AMQP was added that allows to
+
+  <ul>
+    <li>consume messages including correlation</li>
+    <li>produce messages including dynamic address </li>
+  </ul>
+</p>
+
+<p>
+  Have a look at <a href="https://docs.automatiko.io/main/0.11.0/components/messaging.html">Automatiko documentation</a>
+  for more information about AMQP messaging support.
+</p>
+
+
+<h3 class="section-heading">Enhancements in producing messages</h3>
+
+<p>
+  When using message events to publish messages to various messaging providers such as Apache Kafka,
+  MQTT, Apache Camel, AMQP or JMS there might be a need to gain more control over metadata around the
+  message that is being published. To make this possible, Automatiko allows to implement it via
+  <code>io.automatiko.engine.api.io.OutputConverter</code> interface. It has <code>metadata</code>
+  method that allows to produce metadata instance that is tailored for given messaging provider.
+</p>
+
+<p>
+  NOTE: While implementing <code>io.automatiko.engine.api.io.OutputConverter</code> it must implement both
+  methods (<code>convert</code> and <code>metadata</code>) as it is considered a complete way of taking over control of how
+  message metadata and payload is built.
+</p>
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
