@@ -1,0 +1,87 @@
+---
+layout: post
+title: "Workflows with JMS messaging"
+subtitle: "Java Messaging Service is still widly used among enterprises"
+date: 2021-12-21 15:45:00 +0100
+background: '/img/posts/18.jpg'
+---
+
+<h2 class="section-heading">Workflows with JMS messaging</h2>
+
+<p>
+  Last several years there is a lot of buzz about Apache Kafka, Apache Pulsar and in general about
+  event streams. But looking into lots of organizations they are in many case still relying on
+  "old good traditional messaging". To give one example of that, IBM MQ is very popular within small,
+  medium and big enterprises to realize messaging between systems.
+</p>
+
+<p>
+  While event streams are starting to play bigger role in integration, there are still big opportunities
+  to build systems and services based on traditional messaging. In Java world, JMS is an excellent solution to that.
+  Majority (if not all) Java frameworks for building services have support for JMS such as Spring, Quarkus, Jakarta EE
+  application servers and many more.
+</p>
+
+<p>
+  Automatiko introduced support for messaging from the very begining where Apache Kafka and MQTT were the first ones.
+  Next support for Apache Camel has been added and with latest release (0.11.0) AMQP and JMS joined the club. The good thing
+  about messaging support in Automatiko is that it is hidden behind the workflow abstraction. Regardless what messaging you
+  want to use you work with them exactly the same from workflow definition perspective. Of course there will be additional
+  options available depending on connector used (e.g. MQTT will allow to dynamically select topic where to publish message etc)
+  but overall way of working is the same.
+</p>
+
+<p>
+  JMS is no differnt in this conctext, actually JMS support was added based on real life project that expressed a need for that.
+  A typical integration scenario for JMS can be sumarized like this:
+</p>
+
+<p>
+  <i><b>System A is master data for Part information, System B is driving after sales portal that requires access to latest part information.
+  Part as entity is described with XSD schema as part of the cannonical data model and is part of the overall data management of the organization.
+  System A publishes information about new or updated parts on a JMS destination (queue or topic) then System B receives these messages and updates
+  its own data store. Messages are in XML format based on XSD schema.
+</b></i>
+</p>
+
+<p>
+  So this is really a simplifed example of the use case but it is not uncommon to deal with such integrations. Workflows are starting
+  to gain traction to cover this use cases because they are not only used to consume or produce messages but associate these messages with entities
+  of the system that they are part of. For example each part in System B is an entity that has defined life cycle, this life cycle is
+  actually defined as workflow definition. Meaning each and every part will be driven by a workflow instance. This clearly identifies what can happen
+  to the part and at any point in time can be viewed about history of the changes to given part - as simply as looking at the
+  workflow instance execution trace.
+</p>
+
+<p>
+  JMS comes with various features like message properties, priority of messages, selectors and many many more. All of these can be
+  easily used from within the workflow definition to gain more control how messages are produced and consumed. One of the most interesting
+  features are message selectors. It can be easily defined on the message event of the workflow definition and by that it will only
+  consume messages that match this criteria.
+</p>
+<img class="img-fluid" src="/img/posts/18_1.png" alt="Configure JMS message selector on message event">
+<span class="caption text-muted">Configure JMS message selector on message event.</span>
+<p>
+  Similar on the producer side, messages can be associated with custom properties or different priority can be set on the message.
+</p>
+<img class="img-fluid" src="/img/posts/18_2.png" alt="Configure JMS properties on message event">
+<span class="caption text-muted">Configure JMS properties on message event.</span>
+
+<p>
+  Additional information about JMS messaging support can be found in <a href="https://docs.automatiko.io/main/0.11.0/components/messaging.html">Automatiko documentation</a>
+</p>
+
+<p>Lastly, a short video about JMS messaging with workflows in action can be watched below.</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/-9L-DAhFTMU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+
+<p>
+ The source code of shown example in the video can be found <a href="https://github.com/automatiko-io/automatiko-engine/tree/main/integration-tests/automatiko-jms">here</a>
+</p>
+
+<p>
+  Thanks for reading and make sure to drop us feedback or ask questions about this article.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
