@@ -1,0 +1,117 @@
+---
+layout: post
+title: "Automatiko 0.12.0 released"
+subtitle: "Serverless Workflow and messaging enhancements"
+date: 2022-02-02 14:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.12.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>HTTP based messaging support</li>
+   <li>Serverless Workflow support reworked</li>
+   <li>CloudEvent format for messages</li>
+   <li>Filter expression for messages</li>
+</ul>
+
+<h3 class="section-heading">HTTP based messaging support</h3>
+
+<p>
+  Additional messaging provider has been added to Automatiko that allows to use HTTP endpoints as source and target to receive and publish messages.
+  It works in the same way as any other messaging connector in Automatiko and opens up a simple integration with HTTP based services.
+
+  It supports both incoming and outgoing messages. All required details can be found in Automatiko documentation.
+</p>
+
+
+
+<h3 class="section-heading">Serverless Workflow support reworked</h3>
+
+<p>
+  Automatiko supported Serverless Workflow specification from the very beginning but it was rather basic support. It ended at 0.6 version
+  of the specification. With 0.12.0 release it has been completely reworked to enable implementation of majority or all features of the
+  specification. This means that now it supports 0.8 version of the spec and latest version of the SDK.
+</p>
+<p>
+  Serverless Workflow support in Automatiko covers following states
+
+  <ul>
+    <li>Inject</li>
+    <li>Operation (with REST or Expression actions)</li>
+    <li>Event</li>
+    <li>Switch (data and event conditions)</li>
+    <li>Sleep</li>
+    <li>Callback</li>
+    <li>Parallel</li>
+  </ul>
+</p>
+
+<p>
+Please note that not all features of states are yet supported and more detailed documentation about support will be published soon.
+</p>
+
+<p>
+At the same time, Automatiko comes with really simple way to get you started with Serverless Workflows by following 3 simple steps
+
+<ul>
+  <li>Create directory e.g. <code>workflows</code></li>
+  <li>Create workflow definition file e.g. <code>hello.sw.json</code></li>
+  <li>Start Automatiko development container with the folder mounted <br/>
+    <code>docker run -v $(pwd):/app/src/main/resources/workflows -p 8080:8080 -it --rm automatiko/development-container:latest</code>
+  </li>
+</ul>
+
+And that's it! You can execute your workflows without anything else installed on your environment.
+</p>
+
+<p>Here is a short video showing this in action</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ZRPlRC0NKY4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+
+<p>
+  Have a look at <a href="https://docs.automatiko.io/main/0.12.0/getting-started-sw.html">Getting started guide</a>
+  for more information about Serverless Workflow use in Automatiko.
+</p>
+
+<h3 class="section-heading">CloudEvent format for messages</h3>
+
+<p>
+  Cloud Event specification becomes more and more popular as a format of the data being exchanged between systems and services.
+  Automatiko comes with out of the box support for it - including specific bindings for various protocols:
+
+  <ul>
+    <li>HTTP</li>
+    <li>Apache Kafka</li>
+    <li>AMQP</li>
+    <li>JMS</li>
+  </ul>
+
+  To configure use of cloud events for messages, application property <code>quarkus.automatiko.messaging.as-cloudevents</code> must be set to <code>true</code>.
+  It is set by default for Serverless Workflow based workflow definitions.
+</p>
+
+
+<h3 class="section-heading">Filter expression for messages</h3>
+
+<p>
+  Working with messaging infrastucture sometimes requires systems and services to filter out or ignore certains messages.
+  To make it simple, Automatiko introduces a filtering mechanism based on expressions. This can be provided to the runtime
+  via custom attribute of the message event (<code>filterExpression</code>) and it is expected to be a valid expression or function.
+  Such expression can reference following variables:
+
+  <ul>
+    <li><code>eventData</code> - the payload of the message already converted to actual object</li>
+    <li><code>message</code> - raw message object that is specific to messaging connector used e.g. Kafka, MQTT etc</li>
+  </ul>
+
+  <code>filterExpression</code> must return <code>boolean</code> value where <code>true</code> means the message will be processed
+  and <code>false</code> means the message will be ignored (but acknowledged).
+</p>
+
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
