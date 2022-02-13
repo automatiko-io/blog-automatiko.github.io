@@ -1,0 +1,182 @@
+---
+layout: post
+title: "Tekton approvals based on Automatiko"
+subtitle: "Bringing approvals to continous delivery pipelines"
+date: 2022-02-12 15:45:00 +0100
+background: '/img/posts/19.jpg'
+---
+
+<h2 class="section-heading">Approvals - "the missing" part of Tekton</h2>
+
+<p>
+  "Tekton is a powerful and flexible open-source framework for creating CI/CD systems, allowing developers to build, test, and deploy across cloud providers
+  and on-premise systems."
+</p>
+
+<p>
+  <a href="https://tekton.dev">Tekton</a> is a fantastic project that allows to build pipelines for your CI/CD needs. It
+  works really great as it takes advantage of dynamic nature of Kubernetes cluster and uses resources only when it
+  actually executes a task.
+</p>
+
+<p>
+  Tasks that are executed can be pretty much anything that starts a container (pod) and executes. There is a huge collection of
+  tasks available in <a href="https://hub.tekton.dev"> Tekton Hub</a> that can be easily used within your own pipelines. Have a further read
+  about Tekton if you're not familiar with it <a href="https://tekton.dev/docs/">here</a>.
+</p>
+
+<p>
+  There is just one tiny issue - tasks in Tekon are mainly about executing things and not waiting for things. And here comes Automatiko
+  that plugs into the Tekton ecosystem via <a href="https://tekton.dev/docs/pipelines/runs/">Custom Tasks</a>. Custom tasks (realized in
+  Tekton as <code>Run</code>s) allow to provide additional capabilities that are not meant to execute things - like starting a container/pod.
+</p>
+
+<p>
+That is exactly what approvals are - they pause the pipeline run and wait for (usually) human based decision to be made.
+</p>
+
+<p>
+  <a href="https://github.com/automatiko-io/automatiko-approval-task">Automatiko Approval Tasks</a> are an implementation of Tekton
+  Custom Task to bring in approvals into any pipeline. A complete installation steps are available <a href="https://github.com/automatiko-io/automatiko-approval-task">here</a>.
+</p>
+
+<p>
+  Let's explore the features of the Approval Tasks
+  <ul>
+    <li>Integrated with Tekton via Custom Tasks</li>
+    <li>Integrated with Tekton Dashboard via extensions</li>
+    <li>Integrated with email for notifications</li>
+    <li>Comes with predefined approval strategies (single or multi)</li>
+  </ul>
+</p>
+
+<h2 class="section-heading">Integrated with Tekton via Custom Tasks</h2>
+
+<p>
+Approval Tasks are used within pipeline as any other task, by using <code>taskRef</code>
+
+<pre><code class="language-yaml">
+  apiVersion: tekton.dev/v1beta1
+  kind: Pipeline
+  metadata:
+    name: testpipeline
+  spec:
+    tasks:
+      - name: approval
+        taskRef:
+          apiVersion: tekton.automatiko.io/v1alpha1
+          kind: ApprovalTask
+          name: approvaltask
+        params:
+          - name: pipeline
+            value: "$(context.pipelineRun.name)"
+          - name: description
+            value: "Sample approval from pipeline $(context.pipeline.name)"
+          - name: approvers
+            value:
+              - "john"
+</code></pre>
+<span class="caption text-muted">Use approval tasks inside the pipeline</span>
+</p>
+
+<p>
+Approval task have several paramters that should be provided
+
+<ul>
+  <li><b>pipeline</b> - name of the pipeline run it references</li>
+  <li><b>description</b> - user readable description to give a bit of context to approvers</li>
+  <li><b>approvers</b> - list (can be empty to allow anyone to approve) of approvers</li>
+  <li><b>strategy</b> - approval task strategy (<a href="https://github.com/automatiko-io/automatiko-approval-task#single">SINGLE</a> or
+    <a href="https://github.com/automatiko-io/automatiko-approval-task#multi">MULTI</a>) to be used</li>
+</ul>
+</p>
+
+<p>
+It also produces results
+
+<ul>
+  <li><b>decision</b> - <code>true</code> or <code>false</code> that represents approved or rejected decision</li>
+  <li><b>comment</b> - optional comment made by approver</li>
+</ul>
+
+These results can be referenced in further tasks of the pipeline
+<pre><code class="language-yaml">
+  - name: approved
+    when:
+      - input: $(tasks.approval.results.decision)
+        operator: in
+        values: [ "true" ]
+    taskRef:
+      name: print-decision
+    runAfter:
+      - approval
+</code></pre>
+<span class="caption text-muted">Use approval tasks inside the pipeline</span>
+</p>
+
+<h2 class="section-heading">Integrated with Tekton Dashboard via extensions</h2>
+
+<img class="img-fluid" src="/img/posts/19_1.png" alt="Tekton Dashboard extension for Approval Tasks">
+<span class="caption text-muted">Tekton Dashboard extension for Approval Tasks.</span>
+
+<p>
+Tekton Dashboard comes with really useful feature called <code>Extensions</code>. This allows to watch custom resources
+as dedicated item in the Dashboard's menu (as shown above).
+</p>
+
+<img class="img-fluid" src="/img/posts/19_2.png" alt="Tekton Dashboard extension for Approval Tasks - Details view">
+<span class="caption text-muted">Tekton Dashboard extension for Approval Tasks - Details view.</span>
+
+<p>
+Approval tasks detail view uses labels to communicate current state of the task - decision and responses. Users who are managing
+pipelines can easily find out where the task is and what is still to be done to move the pipeline forward.
+</p>
+
+
+<h2 class="section-heading">Integrated with email for notifications</h2>
+
+Approval tasks have built in support for email integration but it requires to be configured upon deployment so it knows what email server
+details to use. In addtion to that, approvers must be given as email addresses to receive email notification.
+
+<img class="img-fluid" src="/img/posts/19_3.png" alt="Email notifications for Approval Tasks">
+<span class="caption text-muted">Email notifications for Approval Tasks.</span>
+
+<p>
+Above is a sample email that is sent to approvers. Great value in email notification is that it has direct link to a task form
+where approver can make the decision to either approve or reject it.
+</p>
+
+<h2 class="section-heading">Comes with predefined approval strategies (single or multi)</h2>
+
+<p>
+Approval tasks can be (currently) assigned based on two strategies
+
+<ul>
+  <li><b>single</b> - assignes a single task to all defined approvers, as soon as there is one decision given (by any of the approvers) pipeline run continues</li>
+  <li><b>multi</b> - assignes dedicated task to each approver, all approvers must provide decision for pipeline run to continue</li>
+</ul>
+
+There are plans to provide additional strategies and if there are any ideas on potential strategies please let us know <a href="https://github.com/automatiko-io/automatiko-approval-task/issues">by creating an issue</a>
+</p>
+
+<p>Lastly, a short video demonstrating approval tasks with Tekton can be watched below.</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/XPSDyOHN0r8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+
+<p>
+ The source code of approval tasks can be found <a href="https://github.com/automatiko-io/automatiko-approval-tasks">here</a>
+</p>
+
+<h2 class="section-heading">It's just the beginning ...</h2>
+
+<p>
+This is really a first version of the approval task and lots of features are already in the works (integration with OIDC/OAuth, timeouts, cancelation etc)
+so stay tuned and provide your feedback and feature requests so this can become useful for many Tekton users.
+</p>
+
+<p>
+  Thanks for reading and make sure to drop us feedback or ask questions about this article.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
