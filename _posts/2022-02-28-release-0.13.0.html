@@ -1,0 +1,98 @@
+---
+layout: post
+title: "Automatiko 0.13.0 released"
+subtitle: "Lots of operator related improvements"
+date: 2022-02-28 14:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.13.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Operator archetype equipped with getting started assets</li>
+   <li>Operator handling with many improvements</li>
+   <li>Multi instance enhancements</li>
+   <li>Serverless Workflow improvements</li>
+   <li>Migration guide - GraphQL especially</li>
+</ul>
+
+<h3 class="section-heading">Operator archetype equipped with getting started assets</h3>
+
+<p>
+  Automatiko comes with dedicated maven archetypes for various types of services that Automatiko can be used for. Kubernetes Operator is one
+  of them and with this release it got enhanced to make it easier to get going with your first Kubernetes Operator based on workflows.
+</p>
+
+
+<p>
+It is as simple as these three commands to get your first operator up and running
+
+<pre><code class="language-plain">
+  mvn -B archetype:generate                                   \
+    -DarchetypeGroupId=io.automatiko.archetypes               \
+    -DarchetypeArtifactId=automatiko-operator-archetype       \
+    -DarchetypeVersion=0.0.0-SNAPSHOT                         \
+    -DgroupId=com.acme.workflows                              \
+    -DartifactId=cars                                         \
+    -DresourceName=Cars
+</code></pre>
+<span class="caption text-muted">Generate new project based on operator archetype</span>
+
+<pre><code class="language-plain">
+  mvn clean package -Pcontainer
+</code></pre>
+<span class="caption text-muted">Build container image with operator</span>
+
+<pre><code class="language-plain">
+  kubectl apply -f target/kubernetes/cars.com.acme.workflows-v1.yml
+  kubectl apply -f target/kubernetes/kubernetes.yml
+</code></pre>
+<span class="caption text-muted">Deploy CRD and operator into Kubernetes cluster</span>
+
+And that's it! You have a operator up and running, not doing much but all the plumbing covered automatically for you!
+</p>
+
+
+<h3 class="section-heading">Operator handling with many improvements</h3>
+
+<p>
+  Automatiko allows to build Kubernetes Operators based on workflows. With this release a lot of improvements have been added, to name few
+
+  <ul>
+    <li>Control generation aware property to also receive updates for changes of the status</li>
+    <li>Automatic CRD and deployment manifest generation</li>
+  </ul>
+
+  With this, building Kubernetes Operators is even easier and provide direct insights into the runtime state of the operator.
+</p>
+
+<p>
+A complete implementation based on this concepts can be found in form on Tekton Approval Task that can be found <a href="https://blog.automatik.io/2022/02/12/tekton-approvals.html">here</a>.
+</p>
+
+<h3 class="section-heading">Multi instance enhancements</h3>
+
+<p>
+  Multi instance allows to use a simple construct to represents complex scenarios. Like iterating over collection to perform
+  same actions on each item of the collection. A common use case is approvals for each item. To be able to react quickly
+  Automatiko 0.13.0 has been improved to support embedded subprocesses and completion conditions on top of multi instance.
+</p>
+
+
+<h3 class="section-heading">Serverless Workflow improvements</h3>
+
+<p>
+  In 0.12.0 release there was a complete rework of Serverless Workflow support which got additional improvements in this release. Mainly around
+  event handling and filtering.
+</p>
+
+<h3 class="section-heading">Migration guide - GraphQL especially</h3>
+
+<p>
+  In this release there was a change to support same user task names in different workflow definitions and that made the generated
+  endpoints of GraphQL to change. Please have a look at <a href="https://docs.automatiko.io/main/0.13.0/migration-guide/0.13.0.html">migration guide</a> for details.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
