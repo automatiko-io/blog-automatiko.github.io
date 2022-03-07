@@ -1,0 +1,163 @@
+---
+layout: post
+title: "Secured Tekton approvals based on Automatiko"
+subtitle: "Securing Approval Tasks for Tekton with OAuth Proxy"
+date: 2022-03-06 15:45:00 +0100
+background: '/img/posts/20.jpg'
+---
+
+<h2 class="section-heading">Secure access to approval tasks with OAuth Proxy</h2>
+
+<p>
+  In <a href="https://blog.automatiko.io/2022/02/12/tekton-approvals.html">previous article</a>, Approval Tasks for Tekton has been introduced. Though that version lacked support for authentication to
+  first of all secure the application and second to simplify usage for approvers - no need to manually enter user id or email to verify they are eligible
+  to work on given approval task.
+</p>
+
+<p>
+  This article will exmplain on high level what to do to secure Automatiko Approval Tasks for Tekton by using
+  <a href="https://oauth2-proxy.github.io/oauth2-proxy/">OAuth Proxy</a> as a side car container.
+</p>
+
+<p>
+  OAuth Proxy allows to use various providers, to name the few
+
+  <ul>
+    <li>Google (default one)</li>
+    <li>Azure</li>
+    <li>GitHub</li>
+    <li>GitLab</li>
+    <li>Facebook</li>
+    <li>and much more, <a href="https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/oauth_provider">see the complete list</a></li>
+  </ul>
+
+  Each provider has various configuration options and features. So best to go through the offical documentation to understand what is needed and what
+  can be expected. In this article, GitHub will be used as provider. So let's get started!
+</p>
+
+<p>
+  First of all, in GitHub you need to create an application. Just go to <a href="https://github.com/settings/developers">https://github.com/settings/developers</a>
+  and create it
+
+</p>
+<img class="img-fluid" src="/img/posts/20_1.png" alt="GitHub application creation">
+<span class="caption text-muted">GitHub application creation.</span>
+
+<p>
+  Make sure that the <code>Authorization callback URL</code> is set to your domain name and has following path <code>/oauth2/callback</code>.
+  So it could look like this <code>https://approvals.mycompany.com/oauth2/callback</code>
+</p>
+
+<p>
+This will give you all the details you need to know to configure OAuth Proxy as side car container. Especially important ones are
+
+<ul>
+  <li>client id</li>
+  <li>client secret</li>
+</ul>
+</p>
+
+<p>
+  Let's configure the Approval Tasks deployment to make use of OAuth based authentication with GitHub as provider. This will consists of following additions
+  to <a href="https://github.com/automatiko-io/automatiko-approval-task/blob/main/k8s/kubernetes-basic.yml">the default deployment manifest file</a>.
+  <ul>
+    <li>enable <code>secured</code> profile via environment variables</li>
+    <li>add second (<code>oauth-proxy</code>) container</li>
+    <li>configure service to use OAuth Proxy instead the Approval Task</li>
+  </ul>
+
+</p>
+
+<h2 class="section-heading">Enable secured profile via environment variables</h2>
+
+<p>
+Automatiko Approval Task come with various application profiles (like email, secured etc). Here we need to enable the <code>secured</code> profile
+<pre><code class="language-yaml">
+  - name: QUARKUS_PROFILE
+    value: secured
+</code></pre>
+</p>
+
+<h2 class="section-heading">Add second (oauth-proxy) container</h2>
+<p>
+
+Add new container into the deployment object that will run as side car to the Approval Tasks container
+<pre><code class="language-yaml">
+  - name: oauth-proxy
+    args:
+      - --provider=github
+      - --https-address=
+      - --http-address=:8888
+      - --email-domain=*
+      - --prefer-email-to-user=true
+      - --upstream=http://localhost:8080
+      - --client-id=GITHUB_CLIENT_ID
+      - --client-secret=GITHUB_CLIENT_SECRET
+      - --cookie-secret=0rM16Iv8aSvlOZYXuabusXO98_y6Yf7QYjcIhXk67Dw=
+      - --pass-access-token=true
+    image: quay.io/oauth2-proxy/oauth2-proxy
+    imagePullPolicy: IfNotPresent
+    ports:
+      - name: oauth-proxy
+        containerPort: 8888
+        protocol: TCP
+</code></pre>
+<span class="caption text-muted">Adding OAuth Proxy container</span>
+
+Replace <code>GITHUB_CLIENT_ID</code> and <code>GITHUB_CLIENT_SECRET</code> with values for your GitHub application.
+
+Note as well the cookie-secret that should be generated for production deployments explicitly, see various hase to generate it <a href="https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview#generating-a-cookie-secret">here</a>
+</p>
+
+<h2 class="section-heading">Configure service to use OAuth Proxy instead the Approval Task</h2>
+
+<p>
+As last step, let's change the service object to use OAuth proxy as entry point instead of the Approval Task
+
+<pre><code class="language-yaml">
+  apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app.kubernetes.io/name: automatiko-approval-task
+      app.kubernetes.io/version: 0.1.0
+    name: automatiko-approval-task
+  spec:
+    ports:
+      - name: http
+        port: 80
+        targetPort: 8888
+    selector:
+      app.kubernetes.io/name: automatiko-approval-task
+      app.kubernetes.io/version: 0.1.0
+    type: ClusterIP
+</code></pre>
+<span class="caption text-muted">Use OAuth proxy as entry point</span>
+</p>
+
+<p>
+ A complete manifest file with OAuth Proxy and GitHub can be found <a href="https://github.com/automatiko-io/automatiko-approval-task/blob/main/k8s/kubernetes-oauth.yml">here</a>
+</p>
+
+<p>
+And that's it. Just deploy the Approval Task to your Kubernetes cluster and you can now enjoy secured Approval Tasks for Tekton pipelines.
+</p>
+
+<p>
+This is just the minimal setup and further tuning can be done based on needs, like changing to another provider, using groups to authorize and so on.
+</p>
+
+<p>As a final wrap, a short video demonstrating secured with OAuth Proxy and GitHub approval tasks can be watched below.</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/jIN-GiU6r5o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+
+<p>
+ The source code of approval tasks can be found <a href="https://github.com/automatiko-io/automatiko-approval-task">here</a>
+</p>
+
+<p>
+  Thanks for reading and make sure to drop us feedback or ask questions about this article.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
