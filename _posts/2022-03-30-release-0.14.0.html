@@ -1,0 +1,118 @@
+---
+layout: post
+title: "Automatiko 0.14.0 released"
+subtitle: "Transation recovery to provide fault tolerance measures"
+date: 2022-03-30 14:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.14.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Transaction log and automatic recovery</li>
+   <li>Workflow defined errors</li>
+   <li>Metadata links</li>
+   <li>Support for Azure Cosmos DB</li>
+   <li>Improved maven archetypes</li>
+</ul>
+
+<h3 class="section-heading">Transaction log and automatic recovery</h3>
+
+<p>
+  There are situations that can cause a crash of the service at the time it was serving requests. That means that the in-flight request(s) might
+  not be completely finished and by that not save into the data store. In such situation service consumers might need to retry the operation
+  which is not always possible.
+</p>
+<p>
+  0.14.0 release comes with opt in feature that allows to enable <code>transaction log</code>. This transaction log will record all operations
+  that the service does and save it locally as sort of snapshots to avoid duplicated execution or what is even worse, lost requests. An important aspect of
+  this feature is that it offloads service consumers from a need to retry from the beginning as the crash might have happened in the last step of the workflow.
+</p>
+<p>
+  A great thing about transaction log is that it comes with automatic recovery on next start of the service and by that will bring your service
+  to the state as nothing crashed (or very close to that). It also blocks the start of the service until the recovery is completed to avoid
+  corrupted instances being accessed.
+</p>
+<p>A video demonstrating transaction log in Kubernetes environment can be watched below.</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/W0WrwvurmZY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+<p>
+  Have a look at more details about transaction log in <a href="https://docs.automatiko.io/main/0.14.0/components/persistence.html#_transaction_log">Automatiko documentation</a>.
+</p>
+
+<h3 class="section-heading">Workflow defined errors</h3>
+
+<p>
+  Business logic represented as workflows might have various outcomes which might be of two kinds
+  <ul>
+    <li><b>successful</b> - that indicates that business goal of that instance has been achieved</li>
+    <li><b>failure</b> - that indicates a failure from the business logic perspective</li>
+  </ul>
+
+  Note that <b>failure</b> outcome here does not refer to technical errors but only business logic related.
+</p>
+<p>
+  To express a failure outcomes of the workflow <code>error end events</code> are used. Error events come with following attributes
+  <ul>
+    <li><b>error code</b> - an code (usually numeric) that identifies type of the error e.g. 404 not found or 409 conflict</li>
+    <li><b>error name</b> - human readable error name</li>
+    <li><b>error data type</b> - type of the data associated with the error - optional but hightly recommended to always be used</li>
+  </ul>
+</p>
+<img class="img-fluid" src="/img/posts/21_1.png" alt="Defined error as failure outcome of the service call">
+<span class="caption text-muted">Defined error as failure outcome of the service call.</span>
+<p>
+  Such errors are then automatically included in the service interface as potential outcomes of service calls. An example below
+  that shows errors defined in the OpenAPI definition of the service (visualized by Swagger UI).
+</p>
+<img class="img-fluid" src="/img/posts/21_2.png" alt="OpenAPI definition with failure outcome as error">
+<span class="caption text-muted">OpenAPI definition with failure outcome as error.</span>
+<p>
+  Have a look at more details about defined errors in <a href="https://docs.automatiko.io/main/0.14.0/components/errors.html#_aborting_workflow_instance_with_an_error">Automatiko documentation</a>.
+</p>
+
+<h3 class="section-heading">Metadata links</h3>
+
+<p>
+  Automatiko comes with automatically created service interface (either ReST or GraphQL) that allows to fetch metadata of the instance being executed.
+  These metadata has been described <a href="https://blog.automatiko.io/2021/11/26/release-0.10.0.html">here</a> and with 0.14.0 release there is additional metadata added - <code>links</code>.
+</p>
+<p>
+  Links correspond to tasks that are directly available after request has been finished to the user who made the call. A perfect example of this
+  is an use case where user triggers an action and there might be additional steps that should follow.
+  Such use case is usually reffered as <code>next action</code> and is rather common in workflow automation. Instead of making a call to get tasks,
+  user is already provided with links to
+  <ul>
+    <li>ReST api endpoint of the task to get its data</li>
+    <li>Form link to display fully configured web page for that task to allow user to directly work on it</li>
+  </ul>
+
+  Note that <code>form</code> link is only present when <code>automatiko-user-management-addon</code> is used.
+</p>
+
+
+<h3 class="section-heading">Support for Azure Cosmos DB</h3>
+
+<p>
+  This release comes with complete support for <a href="https://azure.microsoft.com/en-us/services/cosmos-db/">Azure Cosmos DB</a> that
+  allows to use Automatiko with Azure Cosmos DB based backend of
+  <ul>
+    <li>Apache Cassandra</li>
+    <li>MongoDB</li>
+  </ul>
+  It is considered a drop in replacement, which does not requite any code changes but just configuration of the connection to Azure Cosmos DB
+  instead of regular Apache Cassandra or MongoDB.
+</p>
+
+<h3 class="section-heading">Improved maven archetypes</h3>
+
+<p>
+Maven Archetypes has been slightly improved especially in context of native image generation to be more efficient. In addition to that,
+a new profile has been added <code>kubernetes-native</code> that is tailored for Kubernetes based target environments as it
+automatically adds health checks and can also generate kubernetes manifest files.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
