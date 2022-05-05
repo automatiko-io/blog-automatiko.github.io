@@ -1,0 +1,203 @@
+---
+layout: post
+title: "Automatiko 0.15.0 released"
+subtitle: "Know what happened by auditing your services"
+date: 2022-05-05 14:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.15.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Complete audit of the service</li>
+   <li>Index workflow instance for file system based persistence</li>
+   <li>Import workflow instance via management UI</li>
+</ul>
+
+<h3 class="section-heading">Complete audit of the service</h3>
+
+<p>
+  Nowadays being able to say what happened and by whom becomes more and more important. This could be simply because the legal requirements of the business
+  behind the service but it can also be due to security breach that might have affected given service. Despite the source of the requirement, audit
+  of operation is important if not crucial.
+</p>
+<p>
+  0.15.0 release comes with auditing support that is fully configurable and spans across mutliple layers of the service that is build based
+  on workflows. Here are the categories that are available out of the box
+
+  <ul>
+    <li>workflow life cycle events - such as starting, completing, aborting and signaling workflow instances</li>
+    <li>workflow node life cycle events - execution of each and every node of the workflow</li>
+    <li>workflow instance variable events - whenever variable is changed</li>
+    <li>timer operations - whenever time based job is scheduled and executed</li>
+    <li>messaging - whenever workflow instance is publishing a message</li>
+    <li>persistence - read and write operations on data store</li>
+  </ul>
+</p>
+<p>
+  Auditing is fully configurable and by default it is disabled. It can be enabled at runtime which makes it really easy to get hold of the data
+  whenever needed. Each category can be either included or excluded to fine tune the level of data that is required. For more advanced cases,
+  additional filtering can be provided by implementing an interface.
+</p>
+
+<p>
+  Audit entries can be stored in two formats <code>plain</code> (which is the default) or <code>json</code>. Below are few examples in json format.
+</p>
+
+<span class="caption text-muted">Audit entry for workflow instance started</span>
+  <pre><code class="language-json">
+  {
+     "timestamp":"2022-05-04T07:35:14.683141",
+     "identity":"user123",
+     "workflowDefinitionId":"scripts",
+     "workflowInstanceId":"468819e7-b63c-4500-98fd-0dc7abb27767",
+     "workflowDefinitionName":"scripts",
+     "workflowInstanceState":0,
+     "description":"Simple script handling workflow for john",
+     "variables":{
+        "name":"john",
+        "lastName":"string",
+        "message":"string"
+     },
+     "tags":[
+        "john"
+     ],
+     "transactionId":"54fbab10-8f96-4f48-bb79-844e003a658d",
+     "message":"Workflow instance started"
+  }
+
+</code></pre>
+
+<span class="caption text-muted">Audit entry for workflow instance node executed</span>
+<pre><code class="language-json">
+  {
+     "timestamp":"2022-05-04T07:35:15.154825",
+     "identity":"user123",
+     "workflowDefinitionId":"scripts",
+     "workflowInstanceId":"9e96bfcf-9134-480b-a0e6-b166c87245d3",
+     "workflowDefinitionName":"scripts",
+     "workflowInstanceState":2,
+     "description":"Simple script handling workflow for john",
+     "variables":{
+        "name":"john",
+        "lastName":"string",
+        "message":"Hello john"
+     },
+     "tags":[
+        "john"
+     ],
+     "transactionId":"3729bd63-5ffd-4391-ab16-eab5d835cfda",
+     "nodeInstanceId":"d2146d7c-ed87-4ee0-a273-9b7d531c5c19",
+     "nodeDefinitionId":"ScriptTask_1",
+     "nodeName":"Say hello",
+     "nodeInstanceState":"Completed",
+     "nodeType":"ActionNodeInstance",
+     "message":"Workflow instance node executed"
+  }
+</code></pre>
+<span class="caption text-muted">Audit entry for workflow instance variable changed</span>
+<pre><code class="language-json">
+  {
+     "timestamp":"2022-05-04T07:35:14.926842",
+     "identity":"user123",
+     "workflowDefinitionId":"scripts",
+     "workflowInstanceId":"a052795f-4bed-4cf7-9aa8-78c1d79ba8a6",
+     "workflowDefinitionName":"scripts",
+     "workflowInstanceState":1,
+     "description":"Simple script handling workflow for john",
+     "variables":{
+        "name":"john",
+        "lastName":"string",
+        "message":"Hello john"
+     },
+     "tags":[
+        "john"
+     ],
+     "transactionId":"61caa194-b8fa-4cff-be83-84d6a3a9ff6d",
+     "nodeInstanceId":"54c9765d-3b7f-4fb5-a55f-090b2783573d",
+     "nodeDefinitionId":"ScriptTask_2",
+     "nodeName":"Update message",
+     "nodeInstanceState":"Active",
+     "nodeType":"ActionNodeInstance",
+     "variableName":"message",
+     "message":"Workflow instance variable changed",
+     "variablePreviousValue":"string",
+     "variableValue":"Hello john",
+     "variableTags":[
+
+     ]
+  }
+</code></pre>
+
+<span class="caption text-muted">Audit entry for workflow instance finished</span>
+<pre><code class="language-json">
+  {
+     "timestamp":"2022-05-04T07:35:11.920186",
+     "identity":"user123",
+     "workflowDefinitionId":"scripts",
+     "workflowInstanceId":"c99f0ed3-166b-4a8f-8228-455ab3d0b640",
+     "workflowDefinitionName":"scripts",
+     "workflowInstanceState":2,
+     "description":"Simple script handling workflow for john",
+     "variables":{
+        "name":"john",
+        "lastName":"string",
+        "message":"Hello john"
+     },
+     "tags":[
+        "john"
+     ],
+     "transactionId":"dd477c80-7f1d-412a-bfb4-1739e65bd105",
+     "message":"Workflow instance finished"
+  }
+</code></pre>
+
+<p>
+  As can be noticed it provides a lot of information including the identity behind the request (in this case <code>user123</code>). With that a complete set of information can
+  be gathered and later on inspected when needed.
+</p>
+
+<p>
+  Have a look at more details about audit in <a href="https://docs.automatiko.io/main/0.15.0/components/audit.html">Automatiko documentation</a>.
+</p>
+
+<h3 class="section-heading">Index workflow instance for file system based persistence</h3>
+
+<p>
+  File system based persistence is a really good fit for single service instance deploymnets. It does not require additional infrastructure
+  components to be deployed making it really light and a good fit for IoT based services. For example running on Raspberry PI will require just a
+  single executable file (using native image).
+</p>
+<p>
+  In 0.15.0 release, the file system based persistence was improved to index workflow instances automatically to make it more efficient.
+  Main use cases for the index are to improve speed in locating instances based on
+
+  <ul>
+    <li>workflow instance state</li>
+    <li>workflow instance tags</li>
+  </ul>
+
+  Especially tags based lookup is important as it is used by messaging components to perform correlation against potential conditates to consume the message.
+</p>
+
+<p>
+  Index is automatically created upon start and kept up to date based on all processed workflow instances. Note that it is a smooth upgrade plan
+  as the index will be created if it does not exist and will automatically index all existing instances - regardless of thier state meaning completed and aborted
+  instances will also be indexed.
+</p>
+
+<h3 class="section-heading">Import workflow instance via management UI</h3>
+
+<p>
+  Process management UI (that comes with <code>automatiko-process-management-addon</code>) has been enhanced to support importing workflow instances.
+</p>
+<img class="img-fluid" src="/img/posts/22_1.png" alt="Import workflow instance in Process Management UI">
+<span class="caption text-muted">Import workflow instance in Process Management UI.</span>
+
+<p>
+  On every workflow definition card, there is an import button that allows you to upload exported workflow instance. As simple as selecting file
+  from your local folder and clicking the <code>Import</code> button will bring given instance to life.
+</p>
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
