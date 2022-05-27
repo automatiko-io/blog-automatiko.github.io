@@ -1,0 +1,172 @@
+---
+layout: post
+title: "Serverless Workflow vs BPMN"
+subtitle: "Which one is for what and for whom?"
+date: 2022-05-15 15:45:00 +0100
+background: '/img/posts/23.jpg'
+---
+
+<h2 class="section-heading">Introduction</h2>
+
+<p>
+  Workflows are becoming (again) more popular and pretty much all cloud providers have something to offer in that area.
+  This article is not to cover all possible workflows but two in particular I have worked with
+
+  <ul>
+    <li>Serverless Workflow</li>
+    <li>BPMN - Business Process Model and Notation</li>
+  </ul>
+</p>
+
+<h3 class="section-heading">Serverless Workflow</h3>
+
+<p>
+  <a href="https://serverlessworkflow.io">Serverless workflow</a> is a standards-based DSL (workflow definition language) and open-source developer tools and runtimes. What is worth to
+  mention it is a vendor neutral workflow language that aims at providing portable workflow definitions and tools including runtimes.
+</p>
+
+<h3 class="section-heading">BPMN</h3>
+
+<p>
+  <a href="https://www.bpmn.org">BPMN</a> is both graphical notation (it actually originated from it) and interchange format (xml based) to describe workflows or to
+  put it more in context of BPMN a business process. It serves as documentation of the business logic but also is often used to execute these processes as part of
+  automation platforms.
+</p>
+
+<p>
+  So at first sight you can already notice first difference - one is positioned from technology perspective - serverless while the other
+  is more business oriented. The other important difference is the target audience. Serverless Workflow definition uses DSL that can be either
+  <code>JSON</code> or <code>YAML</code> which makes it a better fit for technical users. BPMN has started from being a documentation tool to be able
+  to graphically model business logic and then it was equipped with execution aspects.
+</p>
+
+<p>
+  So then which one is for what and for whom?
+</p>
+
+<h2 class="section-heading">TLDR</h2>
+
+<p>
+  The shortest answer to it is ... both of them might be a good fit but it solely depends on your needs. Serverless Workflow is mainly focusing on orchestration use cases
+  so if you are in need to do quickly event orchestration (and are technical savy) then it might be worth a first try. If you are more into expressing your business logic
+  so it can be easily shared for less techincal actors then BPMN is a better fit. It really comes down to what you want to get out of it. And remember that
+  Serverless Workflow and BPMN is "just" the format of your workflow but the devil is in the ... runtimes supporting these formats. So evaluate various runtimes to
+  find the one that fits your need and brings the most value. Sometimes that evaluation might lead to changing the workflow format as well which is not bad on its own.
+</p>
+
+<h2 class="section-heading">The long story... short</h2>
+
+<p>
+  Let's look into some details that can be important when looking at both workflow formats.
+</p>
+
+<h3 class="section-heading">Naming</h3>
+
+<p>
+  Serverless Workflow has bit unfortunate name as it actually has little to do with serverless on its own. It is mainly the workflow DSL and set of tools
+  that can be used on serverless platforms and any other platform as it does not really tackle deployment aspect at all.
+</p>
+<p>
+  BPMN has the business part of it that was (and might still be) catchy for less technical audience but can be a bit disadvantagous when it comes to developers.
+</p>
+
+<h3 class="section-heading">Being a standard</h3>
+
+<p>
+  BPMN is an OMG standard that was released (its latest version) back in 2010. It can be considered quite old especially in context of the execution capabilities
+  as it mainly focused on service oriented world (SOA times) and that has changed significanlty. Although all these changes, there are no plans to release new version
+  of the BPMN standard. Nevertheless BPMN has been well adopted by many vendors for both modeling and execution and is considered de facto standard for buiness processes.
+</p>
+<p>
+  Serverless Workflow is part of CNCF and is currently (at the time of writing) a sandbox project. Main part of it is the specification document that defines the
+  DSL (workflow language) and aims at being completely vendor agnostic. It can be seen as a response to many propetriary formats offered by different cloud
+  providers e.g. AWS Step Functions, Azure Logic Apps, Google workflow.
+</p>
+<p>
+  Being a standard (or specification) goes after a need to be portable, in many cases it ends up the same way that extensions are required. Luckly both provide
+  mechanism to extend beyond what standard/spec has defined. BPMN has been in a bit better situation as it originated from modeling (documentation) use case and then
+  evolved into a execution capable. Serverless Workflow on the other hand aims at unifying the cloud era workflows and that is much harder. Let me explain why...
+</p>
+<p>
+  The main challange is to go after propetriary DSLs that are well integrated with the rest of the cloud provider services. One real use case I was involved in where
+  I introduced Serveless Workflow was Ops part of the team that wanted to automate some of their daily activities. First of all they where not aware of the
+  Serverless Workflow spec and once looked into it they got interested. Especially be the "vendor neutral" aspect. But that didn't last long ... as soon as they
+  realized they have to implement way more in their workflow logic due to the fact they needed to access given infrastructure apis they simple switched to vendor
+  specific one - main reason was that they can be way more efficient with vendor specific workflows and by that sacrafise the protability. This is certainly one
+  example which was easier to favor vendor specific solution but these kind of opinions will be more often seen especially when more and more
+  companies move into public cloud.
+</p>
+
+<h3 class="section-heading">Static or dynamic data handling</h3>
+
+<p>
+  Another point to bring up is around workflow data. BPMN is statically typed definition, it does not enforce it but it allows to make use of types for pretty much
+  all data related concepts - data objects, properties, data inputs and outputs. On the other hand Serverless Workflow is dynamically typed. It works with <code>JSON</code>
+  element and allows to manipulate that element via filters and expressions.
+</p>
+<p>
+  Personally I look at it pretty much the same as Java (BPMN) vs Java Script (Serverless Workflow). This comparison has few things in common:
+
+  <ul>
+    <li>BPMN (Java) is often seen as mature (to not say old) and verbose</li>
+    <li>Java is strictly typed language and same is BPMN, while Java Script is fully dynamic and so Serverless Workflow is</li>
+    <li>BPMN is considered harder to get going, Serveless Workflow can be quick way to get someting running but harder to maintain down the road</li>
+    <li>Tooling is much more important for BPMN as it is graphical notation while Serverless Workflow requires just a text editor</li>
+  </ul>
+</p>
+
+<p>
+  It's not about one is better than other, it has different needs in mind. Same as Java and JavaScript and both have their place and many supporters.
+</p>
+
+<h3 class="section-heading">Use case focus</h3>
+
+<p>
+  What might be important is to look at what use cases each format is focusing on as it will drive its features set. Serverless Workflow
+  main focus is on orchestration of events so it will provide good set of constructs in the DSL to express such needs. But it then might lack
+  other features such as human actors involvement, decision and rules evaluation etc.
+</p>
+<p>
+  BPMN is way more generic as it was designed to be capable of defining any business process logic regardless if that was in context of technical
+  solutions. But that also is a bit of a short coming when it comes to execution capabilities where in many cases it needs to make use of
+  extensions to fill the gaps.
+</p>
+
+<h3 class="section-heading">Graphical notation vs text</h3>
+
+<p>
+  This one is really important in my opinion as workflows should provide alternative view over business logic. And that is regardless of
+  the logic behind the workflow. So graphical representation is crucial, while BPMN has it by default as it based on graphical notation,
+  Serverless Workflow has an optional component to render it as diagram. So at least it can presented on high level visually.
+</p>
+<p>
+  Though where graphical representation brings lots of value is when the workflow definition grows. This is not about number of activities/states
+  but actuall business logic behind it e.g. all the details workflow must have to be executable can make the workflow definition be 1000s of lines.
+  That will make it really difficult to work with as text file to capture the business logic of it. So I personally envision that graphical way of
+  definiting workflows will soon be requested for Serverless  Workflow. I am yet to see real production deployments of Serverless Workflow while I have
+  seen many of BPMN production deployments. And these factors played big role.
+</p>
+
+<h3 class="section-heading">Expression language inside the workflow</h3>
+
+<p>
+  In many cases workflow will need to use some sort of expressions to perform checks or modification to data. This can be seen as usually the most
+  techincal aspect of the workflow definition and in fact in many cases it is. Both standards allow to plugin in expression lanaguage which makes it
+  usually specific to runtime that supports given workflow format. Serverless Workflow defaults to <code>JQ</code> which is really powerfull but as well
+  really complex for not technical (infrastructure experienced) people ;) BPMN does not really define default expression language so it comes down to runtime and its
+  features.
+</p>
+
+<h3 class="section-heading">Wrapping up...</h3>
+
+<p>
+  This article was intended to provide a short description of differences between BPMN and Serverless Workflow standards to give you some
+  starting points on what to look at when evaluating it. Main take away is - don't reject any of them until you try them out as opinions
+  (including this one) are by nature opinionated and subjective. Hope this provides at least some information that will help you make your assessment and decision.
+</p>
+
+<p>
+  Lastly, if you decide to give it a try, you can play with Automatiko project that supports <a href="https://docs.automatiko.io/main/0.0.0/getting-started-bpmn.html">BPMN</a> and <a href="https://docs.automatiko.io/main/0.0.0/getting-started-sw.html">Serverless Workflow</a>.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
