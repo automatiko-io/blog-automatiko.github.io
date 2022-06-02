@@ -1,0 +1,127 @@
+---
+layout: post
+title: "Automatiko 0.16.0 released"
+subtitle: "MongoDB as file storage, workflow instance expiration"
+date: 2022-06-02 14:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.16.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>MongoDB files addon</li>
+   <li>Workflow instance expiration</li>
+   <li>Persistence enhancements</li>
+   <li>Auto discovery of persistence addons</li>
+   <li>Use of expressions in event data mapping</li>
+</ul>
+
+<h3 class="section-heading">MongoDB files addon</h3>
+
+<p>
+  Processing files as part of workflow is a common requirement. Automatiko introduced files storage support few releases ago and that was based on
+  <ul>
+    <li>local file system</li>
+    <li>Amazon S3</li>
+    <li>Google Cloud Storage</li>
+  </ul>
+  With this release another file storage add on was introduced that is based on MongoDB. To be more precise it is based on GridFS of MongoDB. GridFS
+  brings a lot of value when dealing with files as it takes care of replication and constant availability of data. Using MongoDB as storage for
+  workflow instances and then using it as well for files makes it way easier to maintain at scale.
+</p>
+
+<p>
+  Have a look at more details about files storage in <a href="https://docs.automatiko.io/main/0.16.0/components/files.html">Automatiko documentation</a>.
+</p>
+
+<h3 class="section-heading">Workflow instance expiration</h3>
+
+<p>
+  Workflow instances might be required to be kept after their completion. That might be due to legal reasons that enforce to have complete access to workflow instance
+  data for a given amount of time. To make this happen Automatiko has a setting of so called instance end strategy that when set to <code>keep</code>
+  will keep the completed (and aborted) workflow instances in data store. Though this entries are never removed and usually they comply with predefined retention policy.
+</p>
+<p>
+  0.16.0 comes with a feature that allows to set <code>expiration</code> at workflow definition level. This expiration is calculated based on the given
+  ISO8601 date period e.g. P30D (which stands for 30 days) and the end date of the workflow instance. This information is stored in data store and by that can be
+  targeted by retention policy logic that can simply clean it up based on the calculated value.
+</p>
+<p>
+  Worth noting is that when using MongoDB as persistent store for workflow instances, clean up of expired workflow instances is done automatically.
+</p>
+<p>
+  Expiration expression is set on workflow definition level via custom attribute called <code>expiresAfter</code>
+</p>
+<img class="img-fluid" src="/img/posts/23_1.png" alt="Setting expiration expression on workflow definition">
+<span class="caption text-muted">Setting expiration expression on workflow definition.</span>
+<p>
+  Have a look at more details about custom attributes on workflow definition in <a href="https://docs.automatiko.io/main/0.16.0/concepts.html#_workflow_custom_attributes">Automatiko documentation</a>.
+</p>
+
+<h3 class="section-heading">Persistence enhancements</h3>
+
+<p>
+  All persistence addons (File system, Apache Cassandra, DynamoDB, DB, MongoDB) have been enhanced to store
+  <ul>
+    <li>start date of the workflow instance</li>
+    <li>end date of the workflow instance</li>
+    <li>expiration date of the workflow instance</li>
+  </ul>
+  Note that the last two (end and expiration dates) will only be stored when <code>instance-end-strategy</code> is set to keep. As this will
+  make the workflow instances to be kept in data store even after they are completed.
+</p>
+<p>
+  Important aspect here is a migration that depending on data store used might be required. See <a href="https://docs.automatiko.io/main/0.16.0/migration-guide/0.16.0.html">Automatiko documentation</a>
+  for details about migration required.
+</p>
+
+<h3 class="section-heading">Auto discovery of persistence addons</h3>
+
+<p>
+  Before 0.16.0 release, persistence addon had to be specified in two places
+  <ul>
+    <li>added as dependency</li>
+    <li>specified in <code>application.properties</code> file using <code>quarkus.automatiko.persistence.type</code> property</li>
+  </ul>
+  The second requirement has been lifted off and now only dependency is required. Note that any other property for given
+  persistence addon is still required to be defined. Only type of the persistence is no longer needed.
+</p>
+
+<h3 class="section-heading">Use of expressions in event data mapping</h3>
+
+<p>
+  In many cases direct workflow data object mapping to the event node is not enough. To give an example, imagine workflow
+  definition should publish a message (or event) to the broker. The payload expected at the destination might come from multiple
+  data objects (aka variables) managed by workflow so it is not really feasible to make it with single data mapping.
+</p>
+<p>
+  For exaclty this scenario, use of expressions is recommended. 0.16.0 comes with possibility to use expressions for event nodes
+  (message event nodes benefit the most) to be able to perform more advanced data adjustements.
+</p>
+<img class="img-fluid" src="/img/posts/23_2.png" alt="Use of expressions in message event data mapping">
+<span class="caption text-muted">Use of expressions in message event data mapping.</span>
+
+<p>
+  Note that, these expressions can directly refer to <code>Functions</code> that make the code really clean on both ends. Functions are
+  simple classes that implement <code>io.automatiko.engine.api.Functions</code> and expose public static methods like the example below
+</p>
+<span class="caption text-muted">Automatiko function to be used as expression</span>
+  <pre><code class="language-java">
+
+import io.automatiko.engine.api.Functions;
+
+public class PersonFunctions implements Functions {
+
+    public static Person personRewrite(Person person) {
+        Person rewritten = new Person();
+
+        rewritten.setAge(person.getAge() + 10);
+        rewritten.setName(person.getName().toUpperCase());
+        return rewritten;
+    }
+}
+
+</code></pre>
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
