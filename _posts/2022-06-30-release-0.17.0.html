@@ -1,0 +1,105 @@
+---
+layout: post
+title: "Automatiko 0.17.0 released"
+subtitle: "Version your workflows to version your apis"
+date: 2022-06-30 04:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.17.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Versioned workflows routing</li>
+   <li>Reuse of user task forms</li>
+   <li>Expression aware user task description</li>
+   <li>Control the key of Kafka record with expression</li>
+   <li>Automatiko modeller new version</li>
+</ul>
+
+<h3 class="section-heading">Versioned workflows routing</h3>
+
+<p>
+  Workflow versioning is very powerful feature that allows to automatically version the service api. With that users can easily
+  provide new features by building new versions of workflows. Although this exposes the version to the consumers of the service.
+  In many cases this is desired behavior but there are also cases when service provider would like to automatically start new instances
+  on the latest available version but keep the existing instances on the versions there were started with.
+</p>
+
+<p>
+  0.17.0 release introduces additional configuration option (disabled by default) that allow to route requests to latest version.
+  The mechanism behind this routing is to
+  <ul>
+    <li>route requests that do not target individual instances to latest version</li>
+    <li>route requests that target individual instances to the version they belong to</li>
+  </ul>
+
+  With this consumers of the service can use latest for new instances and continue on existing versions for instances that are already
+  active. To enable that add <code>quarkus.automatiko.service-route-to-latest=true</code> inside the <code>application.properties</code>
+</p>
+
+<p>
+  Have a look at more details about versioning in <a href="https://docs.automatiko.io/main/0.17.0/concepts.html#_versioning">Automatiko documentation</a>.
+</p>
+
+<h3 class="section-heading">Reuse of user task forms</h3>
+
+<p>
+  User task forms provide an easy way to interact with instances by human actors. There might be many user tasks in given workflow
+  (especially when covering "Human centric" use case). In some situations there might be different tasks defined but they have the same
+  inputs and outputs and by that could take advantage of reusing the form instead of duplicating it.
+</p>
+<p>
+  Forms are implemented based on templates and by default are looked up in following order
+  <ul>
+    <li>based on <code>FormName</code> property of the user task</li>
+    <li>based on <code>TaskName</code> property of the user task</li>
+    <li>based on <code>processId.TaskName</code></li>
+  </ul>
+  The use of <code>FormName</code> allows to reuse existing forms for different tasks.
+</p>
+<img class="img-fluid" src="/img/posts/24_1.png" alt="Reuse of user task forms">
+<span class="caption text-muted">Reuse of user task forms.</span>
+
+<h3 class="section-heading">Expression aware user task description</h3>
+
+<p>
+  User tasks as the name implies are targeting human actors and by that should provide as descriptive information as possible.
+  User task descriptions that allow to use expressions, provide an option to define something that will
+  be easily understandable and come with the context the task is in. For example
+  <code>"Approval for order with number 12345 created by John Doe"</code>
+</p>
+<p>This release comes with support for user task descriptions and expose that information via service apis so building user interfaces
+can benefit from it.</p>
+
+<h3 class="section-heading">Control the key of Kafka record with expression</h3>
+
+<p>
+  When using message events in the workflow definition to publish Kafka records the <code>key</code> of the record is
+  set to the business key of the workflow instance. It is an optional property of the instance so it might not be set
+  resulting in not setting Kafka record key at all. On the other hand there might be situation where the key of the
+  published record should be different than the business key of the workflow instance.
+</p>
+<p>
+  To address this gap, 0.17.0 comes with possibility to use <code>keyExpression</code> custom attribute on the
+  message event to instruct the runtime what key should be set to when publishing the event. Note as well that
+  since it is an expression you can also use automatiko functions to make more advanced keys (those that would require some
+  sort of calculation, generation or concatenation etc).
+</p>
+<img class="img-fluid" src="/img/posts/24_2.png" alt="Kafka keyExpression on message events">
+<span class="caption text-muted">Kafka keyExpression on message events.</span>
+
+<h3 class="section-heading">Automatiko modeller new version</h3>
+
+<p>
+  Automatiko modeller (an eclipse plugin) has been improved to better handle versioning, provide out of the box defaults to make
+  modelling of workflows easier. All users are encouraged to upgrade to this version especially to be able to support latest versions
+  of Eclipse IDE.
+</p>
+<p>
+  Download latest version of the <a href="https://github.com/automatiko-io/bpmn2-modeler/releases/tag/2.1.0">Automatiko modeller</a>.
+</p>
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
