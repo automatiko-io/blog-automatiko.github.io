@@ -1,0 +1,155 @@
+---
+layout: post
+title: "Workflow versioning"
+subtitle: "Version your workflow to evolve your service"
+date: 2022-07-01 08:45:00 +0100
+background: '/img/posts/25.jpg'
+---
+
+<h2 class="section-heading">Workflow versioning</h2>
+
+<p>
+  In Automatiko workflows are the base artifact that the service, function or function flow is built from. And by that they are
+  considered the entry point from the consumer point of view. Workflows as any other software component will evolve over time,
+  somtimes gracefully without major (or breaking) changes and sometimes there will be a need for more drastic change in business
+  logic.
+</p>
+<p>
+  Versioning on the other side is one of the most popular approaches to evolve your services in controlled and safe way.
+  When it comes to workflows, it's no different. Workflows, on all levels - meaning regardless if they are top level
+  workflow or a subworkflow - can be versioned.
+</p>
+
+<p>
+  First and foremost is to identify when to change the version of your workflows. By introducing version of the workflow in
+  Automatiko this will directly translate to the service api (both ReST and GraphQL). So by that the consumers of the service will
+  be affected in a way that they need to switch to the new version as soon as they will be able to.
+</p>
+<img class="img-fluid" src="/img/posts/25_1.png" alt="Versioned REST api">
+<span class="caption text-muted">Versioned REST api.</span>
+
+<h3 class="section-heading">So when to change the version?</h3>
+<p>
+  Best answer to that is when the change introduced is not backward compatible. Meaning currently running workflow instances
+  cannot continue on it. To give an example a non backward compatible change is remove of an activity of the workflow that
+  is a wait state activity. Wait state activity is an activity that workflow instance can pause on. As this means such activity will
+  be stored as part of the instance state. When it is removed and the version is not changed, all instances that are in that activity
+  will no longer work and by that will be in sort of a dead end state.
+</p>
+<p>
+  The same applies to data model, if the change introduces new fields of the data model then it is considered to be compatible
+  unless new fields are required and they do not have any default value.
+</p>
+<p>
+  So as long as the changes are compatible keep the version unchanged.
+</p>
+
+<h3 class="section-heading">How versioning works in Automatiko</h3>
+
+<p>
+  Workflows that are versioned will expose that version number via service api. Depending on which service interface is used
+  it will be as following
+  <ul>
+    <li>REST - service operation path will be prefixed with version number <code>/v1/parts</code> where 1 is the version number</li>
+    <li>GraphQL - queries, mutations and subscriptions names will be suffixed with version number <code>create_parts_1</code></li>
+  </ul>
+  So as you can see there is no need to do extra work to make the service apis to be versioned as well.
+</p>
+<img class="img-fluid" src="/img/posts/25_2.png" alt="Set version of the workflow via properties">
+<span class="caption text-muted">Set version of the workflow via properties.</span>
+<p>
+  Worth mentioning is also the fact that workflows that are versioned needs to take into account messaging aspect. Espeically
+  important is the consumer of messages. This is usually represented as
+  <ul>
+    <li>message start event</li>
+    <li>intermediate message event</li>
+    <li>boundary message event</li>
+  </ul>
+  The reason why it is important to take this into account is that if different versions of the workflow will listen on
+  the same queue or topic they might "steel" messages from each other. There can be different approaches to this problem
+
+  <ul>
+    <li>for start events it might be as simple as removing the message event to allow to only start new instances from latest version</li>
+    <li>for any type of message event easiest is to use dedicated queues/topics to separate consumers</li>
+  </ul>
+</p>
+
+<p>
+  Last but not least when using workflow as function of workflow as function flow versioning is also taken into account. For
+  instance with workflow as a function flow that relies on cloud events the cloud event's type attribute includes the version suffix
+  <code>org.acme.travels.greetings.v2_2</code> that corresponds to workflow version <code>2.2</code>
+</p>
+
+<h3 class="section-heading">Versioning best practice</h3>
+
+<p>
+  The most important best practice is to change version only when introducing non backward compatible change. Other best practices are:
+
+  <ul>
+    <li>When creating new version start from a copy of the current version and expand from there</li>
+    <li>Use number based versioning as it will allow to calculate latest version</li>
+    <li>Run multiple versions at the same time as long as there are active instances of the older versions then remove unused versions</li>
+    <li>Use export / import features of process management addon to migrate between versions</li>
+  </ul>
+
+  These are just few bullet points that could become quite handy when versioning your workflows and by that your service apis.
+  Other will emerge once you start putting this into real life use cases.
+</p>
+
+<h3 class="section-heading">Routing between versions</h3>
+
+<p>
+  Introducing versions of the workflow, introduces versions of your api. In most of the cases this will not cause any issues
+  but will require migration for consumers of the service to latest version. To ease with that, maintainers of the service
+  can turn on feature called <code>route to latest version</code>. The main purpose of this feature is to allow requests to
+  use unversioned paths e.g. <code>/parts</code> instead of versioned one like <code>/v2/parts</code>.
+</p>
+<p>
+  This mechanism is smart enough to find out if the request can be safely routed to latest or not. The main decision point
+  for it is the existence of instance identifier. If operation contains instance id then it is routed to the version that
+  instance belongs to, but if the operation does not have instance id then it goes to the latest version. Following are examples
+  of both operations:
+
+  <ul>
+    <li><code>GET - /parts/12345</code> -  will go to version that hosts part with id <code>12345</code></li>
+    <li><code>POST - /parts</code> - will start new part instance on latest</li>
+  </ul>
+</p>
+<p>
+  To enable that add <code>quarkus.automatiko.service-route-to-latest=true</code> inside the <code>application.properties</code>
+</p>
+
+<p>
+  <b>NOTE: This routing is supported only for REST service interface</b>
+</p>
+
+<h3 class="section-heading">Instance migration between versions</h3>
+
+<p>
+  As soon as we introduce multiple versions of the workflow a common question is how to migrate between versions.
+  This is quite complex topic as the most important parts are
+  <ul>
+    <li>how to map not compatible activities?</li>
+    <li>how to migrate data model?</li>
+  </ul>
+  There is no simple answer to that, but luckily Automatiko comes with an export/import feature that comes with
+  process management addon. With this we can export complete workflow instance (including all their dependencies
+  like sub instances, files, timers etc.) and then import it into another versions of the workflow. Since the
+  exported instance is represented as JSON it can be used to manipulate it to fit into the new version requirements.
+</p>
+
+<p>
+  Although export/import provides a way to migrate instances between versions it is not a complete and automatic mechanism
+  to move high volumes of instances. There will be a need to do some alterations between export and import.
+</p>
+
+<h3 class="section-heading">Complete scanario of using versioned workflows</h3>
+
+<p>
+  At the end, have a look at less than 10 min video showing how versioning works in Automatiko and how simple it is
+  to evolve your service based on workflows.
+</p>
+
+<center><iframe width="560" height="315" src="https://www.youtube.com/embed/b_1votDFZ58" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></center>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
