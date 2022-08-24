@@ -1,0 +1,139 @@
+---
+layout: post
+title: "Automatiko 0.18.0 released"
+subtitle: "Introducing Workflow Java Domain Specific Language"
+date: 2022-08-23 04:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.18.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Java Workflow DSL</li>
+   <li>Customize email body and subject for user task notifications</li>
+   <li>Ability to look through history of subprocesses</li>
+   <li>Process management UI enlarge workflow definition image</li>
+   <li>Metadata links include signal endpoints</li>
+</ul>
+
+<h3 class="section-heading">Java Workflow DSL</h3>
+
+<p>
+  Workflows can be expressed in various formats. The primary one in Automatiko is BPMN but it also supports Servlerless Workflow specification.
+  In both of these formats, workflow definition is expressed as separate file - that is either hand written or modeled in
+  graphical way. They have one thing in common - they are based on specification which defines possible constructs. In many cases
+  this can be referred as Domain Specific Language.
+</p>
+
+<p>
+  0.18.0 release introduces Java DSL for workflow definition. It aims at making workflows easy to be written as Java code. To the
+  extent where most of the features of both Java and Automatko can be used.
+</p>
+<span class="caption text-muted">Basic workflow defined with Java DSL</span>
+<pre><code class="language-java">
+  @Workflows
+  public class MyWorkflows {
+
+    public WorkflowBuilder splitAndJoin() {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("splitAndJoin", "Sample workflow with exclusive split and join");
+
+        String x = builder.dataObject(String.class, "x");
+        String y = builder.dataObject(String.class, "y");
+
+        SplitNodeBuilder split = builder.start("start here").then()
+                .log("log values", "X is {} and Y is {}", "x", "y")
+                .thenSplit("split");
+
+        JoinNodeBuilder join = split.when(() -> x != null).log("first branch", "first branch").thenJoin("join");
+
+        split.when(() -> y != null).log("second branch", "second branch").thenJoin("join");
+
+        join.then().log("after join", "joined").then().end("done");
+
+        return builder;
+    }
+
+ }
+</code></pre>
+<p>
+  Workflows defined in code (as Java DSL), or modeled as BPMN have exactly the same capabilities. They will have service interface
+  (REST and/or GraphQL) created, integrates with messaging (e.g. Apache Kafka or MQTT), persistence and so on. There is no decrese
+  in the feature set provided regardless which format of workflow definition is used. Even more, you can mix all of them in single
+  project.
+</p>
+<p>
+  Worth to mention that workflow definition image is also created for workflows defined with Java DSL
+</p>
+<img class="img-fluid" src="/img/posts/26_1.png" alt="Workflow definition image for Java DSL">
+<span class="caption text-muted">Workflow definition image for Java DSL.</span>
+<p>
+  NOTE: This is the first release of Workflow Java DSL and is focused on basic use cases and will be further enhanced in the next releases.
+</p>
+<p>
+  Have a look at more details about getting started with Workflow Java DSL in <a href="https://docs.automatiko.io/main/0.18.0/getting-started-code.html">Automatiko documentation</a>.
+</p>
+
+<h3 class="section-heading">Customize email body and subject for user task notifications</h3>
+
+<p>
+  User task notifications are powerful way of informing users about work waiting for thier input. Up to this release,
+  the email body had to be included in the service as part of build time. On its own, it's not a big problem as in many cases
+  that was enough. But there are use cases where the application is built by one team and then deployed and used by other.
+</p>
+<p>
+  In such situation the other team could not customize the email body any longer. This release allows to provide email templates
+  at runtime via a folder with <code>.html</code> files which follows the same naming convention. Such templates are then loaded and
+  registered at startup to enable customization of the email notifications.
+</p>
+
+<p>
+  In addition to that, email subject can also be customized on user task level. Each user task can add <code>EmailSubject</code>
+  data input and if such data input is present it will be used as the email subject of the notification.
+</p>
+<p>
+  Have a look at more details about user task notification in <a href="https://docs.automatiko.io/main/0.18.0/components/user-tasks.html#_user_tasks_email_notifications">Automatiko documentation</a>.
+</p>
+
+<h3 class="section-heading">Ability to look through history of subprocesses</h3>
+
+<p>
+  Workflows can invoke sub workflows to take advantage of a good practice called process composition. This at the same time
+  makes the workflow execution history split into various instances. There are situations where the complete visibility to history
+  is required, and that includes the sub workflows.
+</p>
+<p>
+  This release comes with capability to load sub workflow instances based on their status. By default it will only
+  take into consideration active instances as completed ones are removed from the data store. Though this can be altered
+  by enabling to keep completed instances in the data store by setting <code>quarkus.automatiko.on-instance-end</code> to <code>true</code>. This
+  will allow to have complete history over entire hierarchy of workflow instances regardless of their status (active or completed).
+</p>
+
+<h3 class="section-heading">Process management UI enlarge workflow definition image</h3>
+
+<p>
+  Process management UI shows available workflow definition as tiles. Each tile is equipped with an image that represents its
+  workflow definition. In situation where the workflow is quite complex (with many activities) it can be hard to see the details.
+  To address this, an option to enlarge the image has been introduced. As simple as clicking on the image in the tile, will
+  bring a popup with the image enlarged to make it easy to read.
+</p>
+
+<img class="img-fluid" src="/img/posts/26_2.png" alt="Workflow definition image enlarged">
+<span class="caption text-muted">Workflow definition image enlarged.</span>
+
+<h3 class="section-heading">Metadata links include signal endpoints</h3>
+
+<p>
+  Metadata can be returned for most of the REST/GraphQL calls to get the details behind the execution, instead of just the data.
+  The metadata include (among other things) links to resources that are currently active. That can be a user task that should be
+  worked on.
+</p>
+<p>
+  In this release, links also include the endpoints to signal based resources which become really important when using event based
+  subprocesses as this enables a smooth transiton to ensure all work is done in timely manner.
+</p>
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
