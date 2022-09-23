@@ -1,0 +1,176 @@
+---
+layout: post
+title: "Automatiko 0.19.0 released"
+subtitle: "Enhancements for Workflow Java Domain Specific Language"
+date: 2022-08-23 04:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.19.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Support for expression as data inputs and outputs</li>
+   <li>Repeat of nodes</li>
+   <li>Standalone paths</li>
+   <li>Improved workflow image generated from workflow Java DSL</li>
+</ul>
+
+<h3 class="section-heading">Support for expression as data inputs and outputs</h3>
+
+<p>
+  0.18.0 release there was only option to map complete data objects to the nodes and from nodes back to data objects.
+  This release introduces options to use expressions to either extract parts of the data objects (like selected fields)
+  or to assemble a new types.
+</p>
+<span class="caption text-muted">Node input as expression workflow Java DSL</span>
+<pre><code class="language-java">
+  @Workflows
+  public class MyWorkflows {
+
+    public WorkflowBuilder splitAndJoin() {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
+                .dataObject("x", Integer.class)
+                .dataObject("y", String.class);
+
+        builder.start("start here").then()
+          .user("FirstTask").users(() -> java.util.List.of("john"))
+            .expressionAsInput("data", String.class, () -> "custom value").outputToDataObject("value", "y").then()
+          .user("SecondTask").users(() -> java.util.List.of("john", "mary")).dataObjectAsInput("x").then()
+                .end("done");
+
+        return builder;
+    }
+
+ }
+</code></pre>
+<p>
+  Expressions can be used both on inputs and outputs. For outputs there are additional helper methods to
+
+  <ul>
+    <li>append to a list</li>
+    <li>remove from a list</li>
+  </ul>
+</p>
+<p>
+  Expression can also be used to assign user nodes to users and groups based on data objects.
+</p>
+
+<p>
+  Have a look at more details about getting started with Workflow Java DSL in <a href="https://docs.automatiko.io/main/0.19.0/getting-started-code.html">Automatiko documentation</a>.
+</p>
+
+<h3 class="section-heading">Repeat of nodes</h3>
+
+<p>
+  A common requirement is to be able to process given node multiple times based on collection of items.
+  This is now really simple by using <code>repeat</code> method on the node builders. That will make given node
+  to be executed as many times as items in the collection.
+</p>
+<span class="caption text-muted">Repeat node workflow Java DSL</span>
+<pre><code class="language-java">
+  @Workflows
+  public class MyWorkflows {
+
+    public WorkflowBuilder sendMultipleMessagesPerCustomer() {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("multipleMessages", "Sample workflow with that sends multiple Apache Kafka messages")
+        .listDataObject("customers", Customer.class)
+        .start("customers")
+        .then()
+        .sendMessage("new message").topic("published").repeat("customers", "item")
+        .fromDataObject("item")
+        .then()
+        .log("log message", "Logged customer")
+        .then()
+        .endWithMessage("lastUpdate").topic("published").expressionAsInput(String.class, () -> "completed")
+        .done();
+
+
+        return builder;
+    }
+
+ }
+</code></pre>
+<p>
+  Above workflow will send new message per each customer that is in the <code>customers</code> data object.
+</p>
+<p>
+  Repeat is supported for following nodes:
+
+  <ul>
+    <li>service</li>
+    <li>rest service</li>
+    <li>user</li>
+    <li>sub workflow</li>
+    <li>send message</li>
+  </ul>
+</p>
+
+<h3 class="section-heading">Standalone paths</h3>
+
+<p>
+  In addition to main workflow path, 0.19.0 comes with possibility to define alternative paths that can be
+  initiated based on events:
+
+  <ul>
+    <li>incoming message</li>
+    <li>time interval</li>
+  </ul>
+
+  Alternative paths can be:
+  <ul>
+    <li><b>interrupting</b> meaning that once such event occoured it will terminate (abort) main flow of the instance.</li>
+    <li><b>repeatable</b> meaning such event can be received mutliple times as long as the main flow is active.</li>
+  </ul>
+
+</p>
+
+<h3 class="section-heading">Improved workflow image generated from workflow Java DSL</h3>
+
+<p>
+  Workflow image generation has been improved to provide more aligned images of the workflows that were defined via
+  Java DSL. They now support all constructs of the Java DSL including
+  <ul>
+    <li>various types of nodes</li>
+    <li>main and alternative paths</li>
+    <li>error handlers</li>
+    <li>messages</li>
+  </ul>
+
+  <img class="img-fluid" src="/img/posts/27_1.png" alt="Workflow definition image for Java DSL">
+  <span class="caption text-muted">Workflow definition image for Java DSL.</span>
+</p>
+
+<h3 class="section-heading">User registration workflow using Java DSL</h3>
+
+<p>
+  Additional example has been added to Automatiko examples that implements user registration use case with Java DSL.
+  <img class="img-fluid" src="/img/posts/27_2.png" alt="User registration workflow definition image for Java DSL">
+  <span class="caption text-muted">User registration workflow definition image for Java DSL</span>
+</p>
+
+<p>
+  It makes use of following components
+
+  <ul>
+    <li>service invocation of local services (classes)</li>
+    <li>rest service calls - Swagger PetStore (GET and POST)</li>
+    <li>error handling on rest calls</li>
+    <li>control logic via split nodes</li>
+  </ul>
+</p>
+
+<p>
+It can be found in <a href="https://github.com/automatiko-io/automatiko-examples/tree/main/user-registration-javadsl">user-registration-javadsl of Automatiko examples</a>.
+</p>
+
+<h3 class="section-heading">Sample workflows</h3>
+
+<p>
+  A lot of sample workflows defined using Workflow Java DSL can be found in <a href="https://github.com/automatiko-io/automatiko-examples/tree/main/workflows-java-dsl">Automatiko examples</a>.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
