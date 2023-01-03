@@ -1,0 +1,107 @@
+---
+layout: post
+title: "Automatiko 0.21.0 released"
+subtitle: "Automatic error retries addon, sorting support via service interface"
+date: 2023-01-02 04:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.21.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Automatic error recovery</li>
+   <li>Sorting of workflow instances</li>
+   <li>Locking support on data store level</li>
+</ul>
+
+<h3 class="section-heading">Automatic error recovery</h3>
+
+<p>
+  Automatiko tracks execution of activities for each workflow instance. In case of execution errors, workflow instance is put into
+  an error state and by that stays in the activity that failed. There are two ways to resume execution from an error state:
+
+  <ul>
+    <li>retry the failed node</li>
+    <li>skip the failed node</li>
+  </ul>
+
+  Either way there is a need to perform the action manually. With 0.21.0 release, a new addon has been released.
+  <code>io.automatiko.addons:automatiko-error-management-addon</code>. This addon tracks failures of the workflow instances
+  and performs auto retry. No need to manually retrigger errored instances to recover from temporary issues.
+</p>
+
+<p>
+  Though this addon does not cover all possible scenarios for failures as there might be a need to adjust the data handled by the
+  instance as that can be the root cause of the error. For that it is possible to alter the data via service api.
+</p>
+
+<p>
+  To learn more about automatic error recovery, read dedicated section in <a href="https://docs.automatiko.io/main/0.21.0/components/errors.html#_automatic_error_recovery">Automatiko documentation</a>
+</p>
+
+
+<h3 class="section-heading">Sorting of workflow instances</h3>
+
+<p>
+  Workflow instances expose service interfaces to be able to interact with them. There are two service interface types
+  <ul>
+    <li>REST - default and always included</li>
+    <li>GraphQL - optional provided via addon</li>
+  </ul>
+
+  One of the most commonly used feature of that service interface is to list (fetch) workflow instances. Being able to order the result set is yet another common feature.
+</p>
+<p>
+  0.21.0 comes with sorting support sort by and sort direction (ascending or descending) via both service interfaces - REST and GraphQL.
+  Important to note that sorting is supported only for following persistence addons
+
+  <ul>
+    <li>file system</li>
+    <li>mongodb</li>
+    <li>db (RDBMS)</li>
+  </ul>
+
+  The main reason that neither cassandra or dynamodb based persistence does not support sorting is caused by the architectural choices of these data stores.
+</p>
+<p>
+  Standard fields that workflow instances can be sorted are:
+
+  <ul>
+    <li><code>id</code> - unique (UUID like) instance identifier</li>
+    <li><code>description</code> - custom description of the instance if set</li>
+    <li><code>businessKey</code> - business key of the instance if set</li>
+    <li><code>startDate</code> - start date of the instance</li>
+    <li><code>endDate</code> - end date of the workflow instance - only applicable when end on instance strategy is set to KEEP</li>
+  </ul>
+  Worth noting is, that for mongodb and db there is also an option to sort by custom fields that comes from the data. For example for mongodb users can
+  cort by person's age by using following <code>variables.person.name</code>
+</p>
+
+<h3 class="section-heading">Locking support on data store level</h3>
+
+<p>
+  Data correctness is really important and depending on use case it might become critical. On the other hand a lot of issues might arise due to concurrency,
+  especially in highly scalable environments. This release of Automatiko introduces workflow instance level locking on data store. This sort of works
+  like pessimistic locking to make sure that before it executes action on given instance it ensures that it will be the only one doing that.
+</p>
+<p>
+  Main motivation for being pessimistic on the way locking happens is to avoid repeated execution due to concurency issues. Imagine scenario where there are two requests
+  working on the same instance and one of them will call external service. Later on, this instance will be rejected due to concurrency issue - optimistic lock - version mismatch.
+  So it will be retried, and by that same external service will be called again. In some cases it might not be an issue (indepotent calls) but it is not always the case.
+</p>
+<p>
+  With the pessimistic locking it will only allow to work on given instance by single client regardless of how many replicas of the service are available.
+  Again, this is only available for following persistence addons:
+
+  <ul>
+    <li>file system</li>
+    <li>mongodb</li>
+    <li>db (RDBMS)</li>
+  </ul>
+  The main reason that neither cassandra or dynamodb based persistence does not support sorting is caused by the architectural choices of these data stores.
+</p>
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
