@@ -1,0 +1,136 @@
+---
+layout: post
+title: "Apache Camel or workflows or both?"
+subtitle: "Comparing Apache Camel with Workflows and how they can be combined"
+date: 2023-02-15 08:45:00 +0100
+background: '/img/posts/29.jpg'
+---
+
+<p>
+  In this post I would like to take up for discussion a topic that comes up quite often in coversation that oscilate around workflows.
+  Especially common when you talk with Java developers that have interest or experience in that field.
+</p>
+<p>
+ <b>So, what can you expect from this article?</b><br/><br/>
+ A high level comparion of Apache Camel and workflows - what they have in common, what is the difference between them and how they
+ can be combined without the need to choose one or the other but take the best of both to bring an ultimate solution to your business problems.
+</p>
+
+<h2 class="section-heading">Apache Camel</h2>
+
+<p>
+  "<a href="https://camel.apache.org">Apache Camel</a> is an Open Source integration framework that empowers you to quickly and easily integrate various systems consuming or producing data"
+  <br/><br/>
+  It is really popular, it does a great job, it has active community and it evolves all the time. I could spent almost complete article about Camel and
+  its strenghts in the integration area but I would like to mainly focus on its capabilities that are in many cases compared with workflows.
+</p>
+<p>
+  Let's start with what is at the heart of Camel - routes. These are definition of the integration logic to be exected. It can be as simple as receiving message on one channel
+  and then putting that message on another. But it can also be way more complex than that, it implements Enterprise Integration Patterns which cover significant area of
+  system integration. But it also comes with components - sort of connectors (consumers or producers or both) that allow routes to connect to outside world.
+</p>
+<p>
+  These capabilities make Camel also a good fit for one of the use cases that workflows are usually considered - service orchestration. And yes, it can do that very well,
+  especially if that orchestration is stateless or short lived. It can cover it pretty well - including error handling, retries, routing, and so on.
+</p>
+<p>
+  <b>So if it is so good why it hasn't replaced workflows?</b><br/><br/>
+  The main reason for that is the state - as soon as the use case requires persisting state of the execution, Camel does not provide that out of the box. And if you ask me
+  it's actually good design decision to keep it like that. For that workflows are more prepared, let's expore that in more details.
+</p>
+
+<h2 class="section-heading">Workflows</h2>
+
+<p>
+  Workflows on the other hand are not really meant to be for integration. Or to rephrese it - only for integration. The biggest misconception about workflows is that
+  they are only for service orchestration. While that is one of common use cases it is not the only one. Quite the opposite, the full power of workflows is with another one
+  - <b>business entity life cycle management</b>. This might sound fancy, but the idea behind this term is actually to use workflows as a definition of the complete life cycle
+  of the entity of your business.
+</p>
+<p>
+  To give an example, imaging automotive industry, product development where one of the most important business entities is a <b>part</b>.
+  <ul>
+    <li>Every thing is made of parts</li>
+    <li>Parts have defined life cycle</li>
+    <li>Parts are managed by systems and humans</li>
+    <li>Parts are composed and used in various situations</li>
+  </ul>
+  Being able to clearly define the life cycle of a part, that allows to keep track of it at any point in time, easily communicate across external parties is what
+  brings the biggest value to the organization. And this is where workflows shine the most.
+</p>
+<p>
+  As it can be already deducted, the best landscape for workflows is within the stateful environment. Meaning there is a need to keep the data of the given instance after
+  execution is completed. This brings the concept of long lived execution instances aka workflow instance. Workflows are build of two main parts
+
+  <ul>
+    <li>definition - which is sort of a blue print that defines what can happen</li>
+    <li>instance - which is a individual representation of the blue print</li>
+  </ul>
+  There are many instances of the same definition living at the same time, but they are in different state, holding different data sets and are in complete isolation
+  from each other.
+</p>
+
+<p>
+  You might ask can workflows be used for stateless use cases? And the answer is - of course they can and in many situations they are but it does not mean they should always be used.
+  As with everything, use the right tool for the job... which brings us to the next section - why not combining both for the ultimate solution?
+</p>
+
+<h2 class="section-heading">Combining Apache Camel and workflows</h2>
+
+<p>
+  We explored both Apache Camel and Workflows from the point of thier capabilities (very briefly as both can do a lot) so let's look at an idea to combine both for
+  their strengths that be:
+
+  <ul>
+    <li><b>Apache Camel</b> for its fantastic capabilities to connect to essentially everything</li>
+    <li><b>Workflow</b> for its excellent capabilities of state management and human actors interaction</li>
+  </ul>
+
+  To provide little bit more details, workflows define the business logic and delegate to Camel whenever there is a need to interact with external systems (of any kind).
+  The most important is that it should be explicit - meaning by looking at the workflow definition you will directly know that there is an integration. Let Camel do
+  its magic at integration and let workflows keep the state and data under control.
+</p>
+
+<p>
+  That's exactly what <a href="https://automatiko.io">Automatiko</a> does, it laverages Camel for integration purpose via messaging concept that is well defined in workflows. To be more precise
+  when it comes techincalities, Automatiko uses Reactive Messaging specification to combine Apache Camel and Workflow messaging. Let's take a look at simple
+  example that uses camel file component to watch a folder for files and for each file a new instance of the workflow is started.
+</p>
+<img class="img-fluid" src="/img/posts/29_1.png" alt="Start workflow based on incomin file watched by Camel">
+<span class="caption text-muted">Start workflow based on incomin file watched by Camel.</span>
+
+<p>
+  As can be seen on the screenshot above, camel endpoint is defined as attribute on the message defined in the workflow. More details how messaging
+  (and Camel integration) works can be found in <a href="https://docs.automatiko.io/main/0.0.0/components/messaging.html">Automatiko documentation</a>
+</p>
+
+<p>
+  Combining both will give a lot of power to build sofisticated business solution that bring visibility to the team and allow to make use of battle tested
+  integration capabilities of Camel. At the same time not ubusing it for stateful use cases where state and the data needs to be kept.
+</p>
+
+<h2 class="section-heading">When to use which?</h2>
+
+<p>
+  That's essentially the main question for this article to answer. The simple and short answer would be - if you have pure integration use case that do not
+  involve state then go ahead and use Apache Camel - it was designed and made for that. But if you need to support long running instances, retries over time
+  (like after a day, week etc) or you need to involve human actors then workflows will certainly fit better.
+</p>
+<p>
+  Last but not least, I'd like to point out once again, do not consider workflows to be orchestration only - even though there is a lot of buzz about that use case from many vendors
+  consider it more for expressing your business logic as you might already know it, workflows are also known as business processes and they are well understood
+  by a lot of business stake holders.
+</p>
+
+<h2 class="section-heading">Interested to know more?</h2>
+
+<p>
+  Here are few links that can help you to learn more about the concepts described here:
+
+  <ul>
+    <li><a href="https://docs.automatiko.io/main/0.0.0/examples/batch.html">Document processor example</a></li>
+    <li><a href="https://github.com/mswiderski/devoxxpl-2022">Business entity life cycle presentation at Devoxx Poland 2022</a></li>
+  </ul>
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
