@@ -1,0 +1,142 @@
+---
+layout: post
+title: "Automatiko 0.22.0 released"
+subtitle: "Secure your workflows in the way you need it"
+date: 2023-02-19 04:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.22.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Comosite access policy</li>
+   <li>Support for custom access policies</li>
+   <li>Improved instance sorting for file system persistence</li>
+</ul>
+
+<h3 class="section-heading">Comosite access policy</h3>
+
+<p>
+  Automatiko comes with <code>AccessPolicy</code> that allows to control access to workflow instances at runtime. Access policies control access
+  in a fine grained way and what is the most important they are contextual. This means it can evaluate the content of the instance to grant access
+  to it. It can take into account things like:
+
+  <ul>
+    <li>initiator of the instance</li>
+    <li>current identity (user and the groups)</li>
+    <li>data of the instance</li>
+    <li>and more</li>
+  </ul>
+</p>
+
+<p>
+  With this release, a new <code>AccessPolicy</code> was introduced, <code>CompositeAccessPolicy</code>. This policy allows to combine multiple
+  access policy to be enforced at once, meaning that all defined policies must be met to gain access to given instance.
+</p>
+
+<p>
+  To learn more about composite access policy, read dedicated section in <a href="https://docs.automatiko.io/main/0.22.0/components/security.html#_composite_access_policy">Automatiko documentation</a>
+</p>
+
+
+<h3 class="section-heading">Support for custom access policies</h3>
+
+<p>
+  Access policies that are delivered by Automatiko out of the box:
+
+  <ul>
+    <li><code>Allow All</code> - no restrictions, default access policy</li>
+    <li><code>Participants</code> - allows to access the instance to the initiator and users that are currently assigned to active user tasks</li>
+    <li><code>Initiator</code> - allows to access the instance only by the user who initiated the instance</li>
+  </ul>
+  might not be enough. There could be other aspects to cover with access policy such as where the request comes from, check custom group of the user who
+  makes the request and more.
+</p>
+<p>
+  To address this, a custom access policy support was provided. Users can now develop their own custom access policy to be used at runtime.
+  Custom access policies can take advantage of all compnents of the system becuase they are <code>CDI beans</code> and by that can use injection to gain additional capabilities.
+</p>
+<p>
+  Below is a simple access policy that allows to create instances from locahost only. As can be noticed, this policy gets access to request information to check
+  which host is used. This should only be used as example what is required to build a custom access policy.
+</p>
+<span class="caption text-muted">Example of custom access policy</span>
+<pre><code class="language-java">
+  import javax.enterprise.context.ApplicationScoped;
+  import javax.inject.Inject;
+
+  import io.automatiko.engine.api.auth.IdentityProvider;
+  import io.automatiko.engine.api.auth.NamedAccessPolicy;
+  import io.automatiko.engine.api.workflow.ProcessInstance;
+  import io.automatiko.engine.workflow.AbstractProcessInstance;
+  import io.vertx.core.http.HttpServerRequest;
+
+  @ApplicationScoped
+  public class LocalHostOnlyAccessPolicy<T> implements NamedAccessPolicy<ProcessInstance<T>> {
+
+      @Inject
+      HttpServerRequest injectedHttpServletRequest;
+
+      private boolean allowFromLocalhostOnly() {
+
+          if (injectedHttpServletRequest != null && injectedHttpServletRequest.host() != null
+                  && !injectedHttpServletRequest.host().toLowerCase().startsWith("localhost")) {
+              return false;
+          }
+          return true;
+      }
+
+      @Override
+      public boolean canCreateInstance(IdentityProvider identityProvider) {
+          return allowFromLocalhostOnly();
+      }
+
+      @Override
+      public boolean canReadInstance(IdentityProvider identityProvider, ProcessInstance<T> instance) {
+          return allowFromLocalhostOnly();
+      }
+
+      @Override
+      public boolean canUpdateInstance(IdentityProvider identityProvider, ProcessInstance<T> instance) {
+          return allowFromLocalhostOnly();
+      }
+
+      @Override
+      public boolean canDeleteInstance(IdentityProvider identityProvider, ProcessInstance<T> instance) {
+          return allowFromLocalhostOnly();
+      }
+
+      @Override
+      public boolean canSignalInstance(IdentityProvider identityProvider, ProcessInstance<T> instance) {
+          return allowFromLocalhostOnly();
+      }
+
+      @Override
+      public Set<String> visibleTo(ProcessInstance<?> instance) {
+
+          return ((AbstractProcessInstance<?>) instance).visibleTo();
+      }
+
+      @Override
+      public String identifier() {
+          return "localHostOnly";
+      }
+  }
+</code></pre>
+<p>
+  To learn more about access policies, read dedicated section in <a href="https://docs.automatiko.io/main/0.22.0/components/security.html#_custom_access_policy">Automatiko documentation</a>
+</p>
+
+<h3 class="section-heading">Improved instance sorting for file system persistence</h3>
+
+<p>
+  Recenlty introduced sorting capabilities of the workflow instance have been improved for file system persistence. It was mainly focused on efficency of
+  looking up instances to avoid too much file system access on each sorting request. This should significanlty improve speed of sorting for bigger volumes
+  of data when using file system persistence addon.
+</p>
+
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
