@@ -1,0 +1,98 @@
+---
+layout: post
+title: "Automatiko 0.23.0 released"
+subtitle: "Make users aware of awaiting tasks"
+date: 2023-03-15 04:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.23.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Template based forms to start workflow instances</li>
+   <li>Microsoft Teams and Slack user task notification</li>
+   <li>Custom user task notification support</li>
+   <li>New verson of Automatiko Modeler</li>
+</ul>
+
+<h3 class="section-heading">Template based forms to start workflow instances</h3>
+
+<p>
+  In some cases the workflow instance is started by human actors. That means there is usually some kind of form to be populated with inputs and
+  then new instance of the workflow is created. This release of automatiko allows users to define forms as templates in the service that
+  are automatically retruned to user when using the <code>GET</code> endpoint of the workflow REST api.
+</p>
+
+<p>
+  These templates are based on <code>Quarkus Qute</code> and allow to be either a full html page or a fragment to be integrated in existing front ends.
+</p>
+
+<p>
+  These template based workflow forms are provided by <code>io.automatiko.addons:automatiko-user-tasks-management-addon</code> module but custom ones can
+  also be created by implementing <code>io.automatiko.engine.api.workflow.ui.FormProvider</code> interface
+</p>
+
+<p>
+  To learn more about workflow instance start templates, read dedicated section in <a href="https://docs.automatiko.io/main/0.23.0/components/user-tasks.html#_start_process_forms">Automatiko documentation</a>
+</p>
+
+
+<h3 class="section-heading">Microsoft Teams and Slack user task notification</h3>
+
+<p>
+  When working on workflows that involve human actors then notification to quickly inform relevant assignees about awaiting work is crucial. Up to this release, Automatiko
+  allowed to use emails as notification channel. With this release, two additional channels are added
+
+  <ul>
+    <li>Slack</li>
+    <li>Microsoft Teams</li>
+  </ul>
+
+  Both implementation are based on so called <code>Incoming webhooks</code> and allow to easily push notification to specified channels. That means that each user task that
+  requires notification needs to define what channel it should send notification to. It is given as custom attribute named <code>teams-channel</code> and <code>slack-channel</code>.
+
+  Once the user task defined which channel to use, it also requires to be configured as part of the application.properties - the URL of the webhook for given channel.
+</p>
+<p>
+  Content of the notification is also configurable based on templates so users can get better experience when interacting with the notifications.
+</p>
+<p>
+  To learn more about user task notifications, read dedicated section in <a href="https://docs.automatiko.io/main/0.23.0/components/user-tasks.html">Automatiko documentation</a>
+</p>
+
+<h3 class="section-heading">Custom user task notification support</h3>
+
+<p>
+  User task notifications provide very convinient way of informing users about tasks to be worked on. Automatiko comes with following mechanisms to notify
+  users:
+
+  <ul>
+    <li>email</li>
+    <li>slack</li>
+    <li>teams</li>
+  </ul>
+
+  This might or might not be enough and to addresss that custom notifications can also be provided. This essentially means to implement
+  <code>io.automatiko.engine.addons.usertasks.notification.NotificationEmitter</code> that is defined as part of
+  <code>io.automatiko.addons:automatiko-user-tasks-notification</code> module. It is expected to be a CDI bean and then it will be
+  automatically discovered and registered.
+</p>
+
+<p>
+  A good way to start with custom notification emitter is to look at how email, slack or teams are implemented.
+</p>
+<p>
+  To learn more about user task notifications, read dedicated section in <a href="https://docs.automatiko.io/main/0.23.0/components/user-tasks.html">Automatiko documentation</a>
+</p>
+
+<h3 class="section-heading">New verson of Automatiko Modeler</h3>
+
+<p>
+  A new version of Automatiko BPMN modeler has been also released. The latest version is <code>2.2.0</code> and supports Eclipse version 2022-12.
+  You can download it directly from the <a href="https://github.com/automatiko-io/bpmn2-modeler/releases">GitHub releases</a>.
+</p>
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
