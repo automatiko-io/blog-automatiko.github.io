@@ -1,0 +1,68 @@
+---
+layout: post
+title: "Automatiko 0.30.0 released"
+subtitle: "Major upgrade of underlaying frameworks - Automatiko welcomes Quarkus 3!"
+date: 2023-06-03 04:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.30.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Moved to Quarkus 3</li>
+   <li>Moved to Java 17</li>
+   <li>Introduced Apache Camel v4 and Camel Quarkus v3</li>
+</ul>
+
+<p>
+  Automatiko has gone through major refactoring and upgrade of frameworks and libraries. This took significant time to be done completely as it relied on
+  many other open source project before it could make a final release without any degradation from feature standpoint. That's why the version number jumped to
+  <code>0.30.0</code> instead of following regular +1 increment and be at <code>0.24.0</code>.
+</p>
+<p>
+  This release does not come with any significant new features but it is packed with number of enhancements that makes the use of Automatiko even better.
+  In addition, from now on new features are going to be built as major upgrades are now completed.
+</p>
+
+<h3 class="section-heading">Moved to Quarkus 3</h3>
+
+<p>
+  The biggest part in this release is move to Quarkus 3. It comes with significant changes and improvement where one of the biggest (from migration perspective)
+  is move from <code>javax</code> to <code>jakarta</code> namespace. Luckily, Quarkus comes with excellent migration tool that allows to automatically move to the jakarta namespace.
+</p>
+
+<p>
+  Another worth noting feature is the new <code>Dev UI</code> that is available in dev mode. Automatiko also adjusted to it and now it is much better integrated with
+  the whole Dev UI concept.
+</p>
+<img class="img-fluid" src="/img/posts/30_1.png" alt="New Dev UI - overview">
+<span class="caption text-muted">New Dev UI - overview.</span>
+
+<img class="img-fluid" src="/img/posts/30_2.png" alt="New Dev UI - workflow console integrated">
+<span class="caption text-muted">New Dev UI - workflow console integrated.</span>
+<p>
+  It is highly recommended to read and follow <a href="https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.0">Quarkus official migration guide.</a>
+</p>
+
+
+<h3 class="section-heading">Moved to Java 17</h3>
+
+<p>
+  As part of major upgrade of frameworks and libraries, Java version has also moved to latest LTS version (17). This allows to take advantage of runtime improvements and
+  also keep up with fast pace of changes and releases of Java.
+</p>
+
+<h3 class="section-heading">Introduced Apache Camel v4 and Camel Quarkus</h3>
+
+<p>
+  As part of the migration Apache Camel and Camel Quarkus has also been introduced. Important to note that at the time of release of Automatiko 0.30.0 Apache Camel
+  v4 was not yet released as final version, it is currently on milestone 3 (4.0.0-M3). Similar applies for Camel Quarkus which is on milestone 2 (3.0.0-M2).
+</p>
+<p>
+  Even though it is not final version it is quite stable and all components that are included in the release of milestone is considered fully functional.
+</p>
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
