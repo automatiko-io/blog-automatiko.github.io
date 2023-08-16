@@ -1,0 +1,75 @@
+---
+layout: post
+title: "Automatiko 0.31.0 released"
+subtitle: "Find your tasks efficiently - user task search index"
+date: 2023-08-16 04:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.31.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>User task search index</li>
+   <li>Legacy Dev Console UI removed</li>
+</ul>
+
+
+<h3 class="section-heading">User task search index</h3>
+
+<p>
+  Human centric workflows usually involve various actors for the same task, e.g. group based assignments. In situation where a lot of tasks is created users might
+  not be able to easily keep up with all notifications and thus efficiently find tasks they should work on. To address this use case, Automatiko introduces
+  <code>User task index</code>. A central place within service storage to collect all user tasks and then expose REST API to find tasks for human participants.
+</p>
+
+<p>
+  User task index is responsible for efficiently collecting all user tasks and to allow users to find them in efficient way, ensuring proper access verficiation
+  is in place. That means only tasks that user is eligible to work on will be returned.
+</p>
+<img class="img-fluid" src="/img/posts/31_1.png" alt="User task search index REST API">
+<span class="caption text-muted">User task search index REST API.</span>
+
+<p>
+User task index REST API exposes following methods:
+
+<ul>
+  <li>find tasks by various criteria</li>
+  <li>find task by id</li>
+  <li>query for tasks based on custom queries - custom queries are defined by the service</li>
+</ul>
+</p>
+
+<p>
+Filtering tasks can be done via following fields of the tasks
+<ul>
+  <li>task name - partial search in <code>like</code> style</li>
+  <li>task description - partial search in <code>like</code> style</li>
+  <li>task state - exact match of expected state</li>
+  <li>priority - exact match of expected priority</li>
+</ul>
+In addition to filtering, sorting and pagination is also supported.
+</p>
+
+<p>
+In case out of the box query capabilities are not enough, custom queries can be defined to expose searches by other fields of the task.
+</p>
+<p>
+Since this feature can be added to already running service (tasks are already active and waiting for completion), there is also User task management
+endpoint available that allows to reindex active workflow instances to collect task information and make them part of the index.
+</p>
+<p>
+  More information and user task and index for searches can be found in <a href="https://docs.automatiko.io/main/0.31.0/components/user-tasks.html#_user_tasks_index">Automatiko documentation.</a>
+</p>
+
+
+<h3 class="section-heading">Legacy Dev Console UI removed</h3>
+
+<p>
+  When running Automatiko service in Quarkus dev mode there is a DEV UI integrated, Quarkus 3 has introduced new way of providing this for extensions and deprecated old on.
+  This release of Automatiko removed the legacy version of it and only comes with new dev ui components.
+</p>
+
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
