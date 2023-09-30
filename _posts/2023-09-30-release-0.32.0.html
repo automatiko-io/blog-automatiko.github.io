@@ -1,0 +1,95 @@
+---
+layout: post
+title: "Automatiko 0.32.0 released"
+subtitle: "Even more messaging - RabbitMQ, Apache Pulsar"
+date: 2023-09-30 04:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.32.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Support for Apache Pulsar for messaging</li>
+   <li>Support for RabbitMQ for messaging</li>
+   <li>Configurable acknowledge mode for messaging</li>
+   <li>Migrated to OpenTelemetry instead of OpenTracing</li>
+</ul>
+
+
+<h3 class="section-heading">Support for Apache Pulsar for messaging</h3>
+
+<p>
+  Apache Pulsar is becoming more and more common in software development projects nowadays. More and more systems relies on it so Automatiko provides support for it
+  as well. It comes with similar capabilities as Apache Kafka meaning there is a notion of "record" key and value that can be pushed or consumed from within workflows.
+</p>
+<p>
+  Automatiko fully abstracts the details of the messaging platform and allows to build message integration in completely agnostic way.
+</p>
+<p>
+  To make use of this connector it is as simple as adding dependency to the project and work on messaging in the same way as for all other connectors in Automatiko.
+</p>
+  <pre><code class="language-xml">
+&lt;dependency&gt;
+  &lt;groupId&gt;io.quarkus&lt;/groupId&gt;
+  &lt;artifactId&gt;quarkus-smallrye-reactive-messaging-pulsar&lt;/artifactId&gt;
+&lt;/dependency&gt;
+  </code></pre>
+  <span class="caption text-muted">Apache Pulsar connector project dependency</span>
+<p>
+  A fully running sample project can be found <a href="https://github.com/automatiko-io/automatiko-engine/tree/main/integration-tests/automatiko-pulsar">here</a>.
+</p>
+<p>
+  More information about Apache Pulsar connector can be found in <a href="https://docs.automatiko.io/main/0.32.0/components/messaging.html">Automatiko documentation.</a>
+</p>
+
+<h3 class="section-heading">Support for RabbitMQ for messaging</h3>
+
+<p>
+  RabbitMQ support was partially provided by AMQP connector but it required to run RabbitMQ wth AMQP plugin enabled. And that did not provide all RabbitMQ features.
+  0.32.0 provides dedicated RabbitMQ connector to natively integrate with RabbitMQ brokers and provide feature rich capability.
+</p>
+<p>
+  To make use of this connector it is as simple as adding dependency to the project and work on messaging in the same way as for all other connectors in Automatiko.
+</p>
+  <pre><code class="language-xml">
+&lt;dependency&gt;
+  &lt;groupId&gt;io.quarkus&lt;/groupId&gt;
+  &lt;artifactId&gt;quarkus-smallrye-reactive-messaging-rabbitmq&lt;/artifactId&gt;
+&lt;/dependency&gt;
+  </code></pre>
+  <span class="caption text-muted">RabbitMQ connector project dependency</span>
+<p>
+  A fully running sample project can be found <a href="https://github.com/automatiko-io/automatiko-engine/tree/main/integration-tests/automatiko-rabbitmq">here</a>.
+</p>
+<p>
+  More information about RabbitMQ connector can be found in <a href="https://docs.automatiko.io/main/0.32.0/components/messaging.html#_rabbitmq_connector">Automatiko documentation.</a>
+</p>
+
+<h3 class="section-heading">Configurable acknowledge mode for messaging</h3>
+
+<p>
+  Automatiko relies on Reactive Messaging to provide support for intergration with other systems. One of core concepts there is acknowledgement - this is essentially
+  way of informing the message broker about message being properly consumed and as such can be considered as completed - no need to perform redelivery.
+</p>
+<p>
+  With 0.32.0 release, there is an easy way to control it from within workflow definition. It can be set via custom attribute named <code>ackMode</code>
+  on the message event or via dedicated <code>ackMode</code> method in Java DSL. It supports following modes:
+
+  <ul>
+    <li><b>post</b> - the acknowledgement of the incoming message is executed once the produced message is acknowledged.</li>
+    <li><b>pre</b> - the acknowledgement of the incoming message is executed before the message is processed by the method.</li>
+    <li><b>manual</b> - the acknowledgement is done by the user.</li>
+    <li><b>none</b> - No acknowledgment is performed, neither manually or automatically.</li>
+  </ul>
+</p>
+
+<h3 class="section-heading">Migrated to OpenTelemetry instead of OpenTracing</h3>
+
+<p>
+  Until this release Automatiko was relying on <a href="https://opentracing.io">OpenTracing</a> to provide capabilities around tracing. This has been sort of deprecated while ago and is not being actively
+  developed any more. <a href="https://opentelemetry.io">OpenTelemetry</a> is the future and by that Automatiko is moving towards it as well.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
