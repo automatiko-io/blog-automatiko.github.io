@@ -1,0 +1,82 @@
+---
+layout: post
+title: "Automatiko 0.35.0 released"
+subtitle: "Workflow Java DSL improvements and more"
+date: 2024-08-14 04:45:00 +0100
+background: '/img/posts/04.jpg'
+---
+
+<p>We are pleased to announce a new release of Automatiko - 0.35.0 and follow up on 0.33.0 and 0.34.0 </p>
+
+<h2 class="section-heading">Highlights</h2>
+
+<ul>
+   <li>Prefix of REST api for workflows</li>
+   <li>Expressions as lambda in Java DSL</li>
+   <li>Disable persistence at runtime</li>
+   <li>Configurable source folders</li>
+   <li>Azure blob store as file storage</li>
+   <li>Deprecation of Serverless Workflow support</li>
+</ul>
+
+<h3 class="section-heading">Prefix of REST api for workflows</h3>
+
+<p>
+  A new built time property (<code>quarkus.automatiko.resource-path-prefix</code>) was introduced to allow to set endpoint prefix for all workflows instead of being bound directly based on process id and version. All workflow related endpoint can be now
+  easily configured to be exposed via common endpoint prefix e.g. <code>/api/workflows</code> which will then be followed by version and process id - <code>/api/workflows/v1/claims</code>
+</p>
+
+<h3 class="section-heading">Expressions as lambda in Java DSL</h3>
+
+<p>
+  Workflows Java DSL has been significantly improved to provide more Java like usage patterns. The last few releases provide improvements in following areas
+
+  <ul>
+    <li>lambda expression for correlation, message filters</li>
+    <li>lambda expression for data object initial values</li>
+    <li>lambda expression for calculating timer expressions</li>
+    <li>repeat construct allows to handle errors for each item</li>
+    <li>WorkflowBuilder allows to set category to group workflows as part of OpenAPI definition</li>
+    <li>error handling improvements and simplifications</li>
+  </ul>
+</p>
+
+
+<h3 class="section-heading">Disable persistence at runtime</h3>
+
+<p>
+  In certain situations service built with given persistence might not be started due to missing persistence storage. Like running tests against fully built application but without the database being available.
+  Automatiko 0.35.0 allows to disable persistence at runtime and fallback to in memory storage only. This can be done by setting <code>quarkus.automatiko.persistence.disabled</code> to <code>true</code> value.
+</p>
+
+
+<h3 class="section-heading">Configurable source folder and project paths</h3>
+
+<p>
+  Automatiko supports multi module setup which essentially allow to define workflows in different modules than the actual application - where quarkus build plugin is defined. This means that source of the workflows
+  (especially important when using Workflow Java DSL) might be in different location. Automatiko 0.35.0 introduced a property <code>quarkus.automatiko.project-paths</code> that allows to provide relative path to the project
+  where the workflows are defined. Multiple paths can be provided with comma separator.
+</p>
+<p>
+  In addition, <code>quarkus.automatiko.source-folder</code> property was added to allow to change the source path in the project structure. By default it assumes to be stanadard maven project structure and by that it is
+  set to <code>src/main/java</code> but sometimes the structure is different like in Gradle based projects. This feature aims at supporting Gradle as build system.
+</p>
+
+<h3 class="section-heading">Azure blob store as file storage</h3>
+
+<p>
+  Azure Blob Store has been added as support for file persistence in similar way as S3, Google Cloud Storage, Mongo GridFile system. With this feature, users can store files used within
+  their workflows reliably in Azure Blob Store.
+</p>
+
+<h3 class="section-heading">Deprecation of Serverless Workflow support</h3>
+
+<p>
+  Serverless Workflow support in Automatiko is being deprecated which means there won't be any development on this workflow definition format any longer. This is done based on the fact that Serverless Workflow does not bring
+  extra value and underdeliver on its original promise to become the de-facto standard for workflows in the cloud. At the same time it proved to be very complex for anything more than trivial hello world workflows.
+</p>
+<p>
+  While it is not yet being removed but is planned to be completely dropped from the code base in 2025.
+</p>
+
+<p>Photographs by <a href="https://unsplash.com/">Unsplash</a>.</p>
